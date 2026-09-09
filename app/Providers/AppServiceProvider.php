@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Providers;
-
+use App\Models\PengajuanBarang;
+use App\Observers\PengajuanBarangObserver;
 use Illuminate\Support\ServiceProvider;
-
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        PengajuanBarang::observe(PengajuanBarangObserver::class);
     }
 }
