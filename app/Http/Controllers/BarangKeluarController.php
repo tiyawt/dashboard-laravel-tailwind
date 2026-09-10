@@ -27,7 +27,6 @@ class BarangKeluarController extends Controller
 
     public function create()
     {
-        // Ambil semua master barang agar opsi tetap tampil di view (opsi stok 0 akan di-disable di Blade)
         $masterBarang = MasterBarang::all();
         return view('pages.barangKeluar.barang-keluar-create', compact('masterBarang'));
     }
