@@ -3,7 +3,7 @@
 @section('content')
 <x-common.page-breadcrumb pageTitle="Edit Barang & Batas Stok Minimal" />
 
-<!-- Container Card Utama (Sesuai Style TailAdmin) -->
+<!-- Container Card Utama -->
 <div class="w-full max-w-full overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-gray-800 dark:bg-white/[0.03]">
 
     <!-- Header Form -->

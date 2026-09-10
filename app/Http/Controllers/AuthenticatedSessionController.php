@@ -12,7 +12,9 @@ class AuthenticatedSessionController extends Controller
 {
     // Jika user SUDAH login, baru arahkan ke dashboard
     if (Auth::check()) {
-        return redirect()->route('dashboard');
+        return redirect()->route(
+            Auth::user()->role === 'admin' ? 'barang-keluar.index' : 'dashboard'
+        );
     }
 
     // Jika BELUM login, tampilkan halaman signin (JANGAN ada redirect lagi)
@@ -31,7 +33,11 @@ class AuthenticatedSessionController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard')->with('success', 'Selamat datang kembali!');
+            $defaultRoute = Auth::user()->role === 'admin'
+                ? route('barang-keluar.index')
+                : route('dashboard');
+
+            return redirect()->intended($defaultRoute)->with('success', 'Selamat datang kembali!');
         }
 
         // Jika gagal signin

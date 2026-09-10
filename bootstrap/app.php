@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\PreventBackHistory;
+use App\Http\Middleware\RestrictAdminToBarangKeluar;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // 2. Daftarkan alias middleware 'prevent-back'
         $middleware->alias([
             'prevent-back' => PreventBackHistory::class,
+            'admin-barang-keluar' => RestrictAdminToBarangKeluar::class,
         ]);
 
         // 3. Atur redirect untuk user yang belum login ke '/signin'

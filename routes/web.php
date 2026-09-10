@@ -27,7 +27,7 @@ Route::middleware('guest')->group(function () {
 | 2. ROUTE AUTHENTICATED (Wajib Login & Anti-Back Cache)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'prevent-back'])->group(function () {
+Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(function () {
 
     // Logout
     Route::post('/logout', [AuthenticatedSessionController::class, 'logout'])->name('logout');

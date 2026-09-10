@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\StokKeluarLemari;
 use App\Models\MasterBarang;
+use App\Services\SimpleXlsxExporter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class BarangKeluarController extends Controller
@@ -38,6 +40,8 @@ class BarangKeluarController extends Controller
 
     public function store(Request $request)
     {
+        $isAdmin = Auth::user()?->role === 'admin';
+
         $validated = $request->validate([
             'barang_id'           => 'required|exists:master_barang,id',
             'kondisi_barang_lama' => 'nullable|string',
@@ -45,7 +49,9 @@ class BarangKeluarController extends Controller
             'jumlah'              => 'required|numeric|min:1',
             'pelapor'             => 'required|string',
             'lokasi'              => 'required|string',
-            'status'              => 'required|in:done,not_yet',
+            'status'              => $isAdmin
+                ? 'nullable|in:done,not_yet'
+                : 'required|in:done,not_yet',
             'keterangan'          => 'nullable|string',
         ]);
 
@@ -68,6 +74,10 @@ class BarangKeluarController extends Controller
                 ->withErrors(['jumlah' => "Stok tidak cukup! Stok tersedia hanya {$stokTersedia} {$barang->satuan}, tetapi Anda memasukkan {$jumlahMinta}."]);
         }
 
+        if ($isAdmin) {
+            $validated['status'] = 'not_yet';
+        }
+
         StokKeluarLemari::create($validated);
 
         return redirect()->route('barang-keluar.index')->with('success', 'Catatan barang keluar berhasil ditambahkan!');
@@ -76,6 +86,13 @@ class BarangKeluarController extends Controller
     public function edit($id)
     {
         $barangKeluar = StokKeluarLemari::findOrFail($id);
+
+        if (Auth::user()?->role === 'admin' && strtolower($barangKeluar->status) === 'done') {
+            return redirect()->route('barang-keluar.index')->withErrors([
+                'error' => 'Catatan barang keluar yang sudah DONE hanya dapat dikelola oleh superadmin.',
+            ]);
+        }
+
         $masterBarang = MasterBarang::all();
 
         return view('pages.barangKeluar.barang-keluar-edit', compact('barangKeluar', 'masterBarang'));
@@ -83,6 +100,15 @@ class BarangKeluarController extends Controller
 
     public function update(Request $request, $id)
     {
+        $isAdmin = Auth::user()?->role === 'admin';
+        $barangKeluar = StokKeluarLemari::findOrFail($id);
+
+        if ($isAdmin && strtolower($barangKeluar->status) === 'done') {
+            return redirect()->route('barang-keluar.index')->withErrors([
+                'error' => 'Catatan barang keluar yang sudah DONE hanya dapat dikelola oleh superadmin.',
+            ]);
+        }
+
         $validated = $request->validate([
             'barang_id'           => 'required|exists:master_barang,id',
             'kondisi_barang_lama' => 'nullable|string',
@@ -90,11 +116,12 @@ class BarangKeluarController extends Controller
             'jumlah'              => 'required|numeric|min:1',
             'pelapor'             => 'required|string',
             'lokasi'              => 'required|string',
-            'status'              => 'required|in:done,not_yet',
+            'status'              => $isAdmin
+                ? 'nullable|in:done,not_yet'
+                : 'required|in:done,not_yet',
             'keterangan'          => 'nullable|string',
         ]);
 
-        $barangKeluar = StokKeluarLemari::findOrFail($id);
         $barang       = MasterBarang::findOrFail($request->barang_id);
 
         // Hitung stok tersedia (kembalikan stok lama jika transaksi sebelumnya sudah DONE)
@@ -116,6 +143,10 @@ class BarangKeluarController extends Controller
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['jumlah' => "Stok tidak cukup! Stok tersedia hanya {$stokTersedia} {$barang->satuan}, tetapi Anda memasukkan {$jumlahMinta}."]);
+        }
+
+        if ($isAdmin) {
+            $validated['status'] = 'not_yet';
         }
 
         $barangKeluar->update($validated);
@@ -153,41 +184,21 @@ class BarangKeluarController extends Controller
             ->latest()
             ->get();
 
-        $fileName = "laporan_barang_keluar_{$tahun}_{$bulan}.csv";
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
+        $fileName = "laporan_barang_keluar_{$tahun}_{$bulan}.xlsx";
         $columns = ['Tanggal Keluar', 'Nama Barang', 'Jumlah', 'Satuan', 'Pelapor', 'Lokasi', 'Status', 'Keterangan'];
+        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
-        $callback = function () use ($data, $columns) {
-            $file = fopen('php://output', 'w');
+        $rows = $data->map(fn ($item) => [
+            $formatDate($item->tanggal_keluar),
+            $item->barang?->nama_barang ?? '-',
+            $item->jumlah,
+            $item->barang?->satuan ?? '',
+            $item->pelapor,
+            $item->lokasi,
+            strtoupper($item->status),
+            $item->keterangan ?? '-',
+        ])->all();
 
-            // Header kolom CSV
-            fputcsv($file, $columns);
-
-            // Baris data
-            foreach ($data as $item) {
-                fputcsv($file, [
-                    $item->tanggal_keluar,
-                    $item->barang->nama_barang ?? '-',
-                    $item->jumlah,
-                    $item->barang->satuan ?? '',
-                    $item->pelapor,
-                    $item->lokasi,
-                    strtoupper($item->status),
-                    $item->keterangan ?? '-'
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Barang Keluar');
     }
 }

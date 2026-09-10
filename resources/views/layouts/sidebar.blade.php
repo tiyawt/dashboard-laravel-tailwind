@@ -63,7 +63,9 @@ $currentPath = request()->path();
                     Manajemen Barang
                 </span>
             </div>
-            <img class="block [.sidebar-expanded_&]:hidden" src="/images/logo/logo-icon.svg" alt="Logo" width="32" height="32" />
+            <span class="block [.sidebar-expanded_&]:hidden text-lg font-bold text-blue-500 dark:text-white" aria-label="Manajemen Barang">
+                MB
+            </span>
         </a>
     </div>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PengajuanBarang;
 use App\Models\MasterBarang;
+use App\Services\SimpleXlsxExporter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -119,39 +120,23 @@ class PengajuanBarangController extends Controller
             ->latest()
             ->get();
 
-        $fileName = "laporan_pengajuan_barang_{$tahun}_{$bulan}.csv";
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
+        $fileName = "laporan_pengajuan_barang_{$tahun}_{$bulan}.xlsx";
         $columns = ['Tanggal Pengajuan', 'Nama Barang', 'Volume', 'Harga/Unit', 'Total Harga', 'Permintaan (Divisi)', 'Status Barang', 'Status Disposisi', 'Link SPB/Invoice', 'Keterangan'];
+        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
-        $callback = function () use ($data, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
+        $rows = $data->map(fn ($item) => [
+            $formatDate($item->tanggal_pengajuan),
+            $item->barang?->nama_barang ?? '-',
+            $item->volume,
+            $item->harga_per_unit,
+            $item->volume * $item->harga_per_unit,
+            $item->permintaan,
+            strtoupper($item->status_barang),
+            strtoupper($item->status_disposisi),
+            $item->link_spb_invoice ?? '-',
+            $item->keterangan ?? '-',
+        ])->all();
 
-            foreach ($data as $item) {
-                fputcsv($file, [
-                    $item->tanggal_pengajuan,
-                    $item->barang->nama_barang ?? '-',
-                    $item->volume,
-                    $item->harga_per_unit,
-                    $item->volume * $item->harga_per_unit,
-                    $item->permintaan,
-                    strtoupper($item->status_barang),
-                    strtoupper($item->status_disposisi),
-                    $item->link_spb_invoice ?? '-',
-                    $item->keterangan ?? '-'
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Pengajuan Barang');
     }
 }

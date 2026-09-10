@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PenerimaanBarang;
 use App\Models\PengajuanBarang;
+use App\Services\SimpleXlsxExporter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -106,38 +107,22 @@ class PenerimaanBarangController extends Controller
             ->latest()
             ->get();
 
-        $fileName = "laporan_penerimaan_barang_{$tahun}_{$bulan}.csv";
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
+        $fileName = "laporan_penerimaan_barang_{$tahun}_{$bulan}.xlsx";
         $columns = ['Nama Barang', 'Tgl Pengajuan', 'Status Kondisi', 'Divisi Permintaan', 'Total Pengajuan', 'Tgl Pengambilan', 'Jumlah Diterima', 'Penerima', 'Keterangan'];
+        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
-        $callback = function () use ($data, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
+        $rows = $data->map(fn ($item) => [
+            $item->pengajuan?->barang?->nama_barang ?? '-',
+            $formatDate($item->pengajuan?->tanggal_pengajuan),
+            strtoupper($item->pengajuan?->status_barang ?? '-'),
+            $item->pengajuan?->permintaan ?? '-',
+            $item->pengajuan?->volume ?? 0,
+            $formatDate($item->tanggal_pengambilan),
+            $item->jumlah_diterima,
+            $item->penerima ?? '-',
+            $item->keterangan ?? '-',
+        ])->all();
 
-            foreach ($data as $item) {
-                fputcsv($file, [
-                    $item->pengajuan->barang->nama_barang ?? '-',
-                    $item->pengajuan?->tanggal_pengajuan ?? '-',
-                    strtoupper($item->pengajuan->status_barang ?? '-'),
-                    $item->pengajuan->permintaan ?? '-',
-                    $item->pengajuan->volume ?? 0,
-                    $item->tanggal_pengambilan ?? '-',
-                    $item->jumlah_diterima,
-                    $item->penerima ?? '-',
-                    $item->keterangan ?? '-'
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Penerimaan Barang');
     }
 }

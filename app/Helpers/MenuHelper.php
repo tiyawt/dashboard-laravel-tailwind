@@ -2,11 +2,13 @@
 
 namespace App\Helpers;
 
+use Illuminate\Support\Facades\Auth;
+
 class MenuHelper
 {
     public static function getMainNavItems()
     {
-        return [
+        $items = [
             // Menu
             [
                 'name' => 'Dashboard',
@@ -40,27 +42,27 @@ class MenuHelper
                 'icon' => 'barang-keluar',
                 'path' => '/barang-keluar',
             ],
-
-
-
-
         ];
+
+        return self::filterItemsForCurrentUser($items);
     }
 
     public static function getOthersItems()
     {
-        return [
+        $items = [
             [
                 'name' => 'User Profile',
                 'icon' => 'user-profile',
                 'path' => '/profile',
             ],
         ];
+
+        return self::filterItemsForCurrentUser($items);
     }
 
     public static function getMenuGroups()
     {
-        return [
+        $groups = [
             [
                 'title' => 'Menu Utama',
                 'items' => self::getMainNavItems()
@@ -70,6 +72,27 @@ class MenuHelper
                 'items' => self::getOthersItems()
             ]
         ];
+
+        return array_values(array_filter(
+            $groups,
+            fn (array $group) => !empty($group['items'])
+        ));
+    }
+
+    /**
+     * Admin hanya dapat melihat halaman Barang Keluar pada sidebar.
+     * Superadmin tetap dapat melihat seluruh menu.
+     */
+    private static function filterItemsForCurrentUser(array $items): array
+    {
+        if (Auth::user()?->role !== 'admin') {
+            return $items;
+        }
+
+        return array_values(array_filter(
+            $items,
+            fn (array $item) => $item['path'] === '/barang-keluar'
+        ));
     }
 
     public static function isActive($path)

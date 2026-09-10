@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasterBarang;
 use App\Models\MinimalStock;
+use App\Services\SimpleXlsxExporter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -142,37 +143,20 @@ class MinimalStockController extends Controller
     {
         $data = MinimalStock::with('barang')->latest()->get();
 
-        $fileName = "laporan_stok_minimal_" . date('Y-m-d') . ".csv";
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
+        $fileName = "laporan_stok_minimal_" . date('Y-m-d') . ".xlsx";
         $columns = ['Nama Barang', 'Satuan', 'Jumlah Stok Fisik', 'Batas Minimal', 'Selisih', 'Status Alert', 'Rentang Waktu', 'Keterangan'];
 
-        $callback = function () use ($data, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
+        $rows = $data->map(fn ($item) => [
+            $item->barang?->nama_barang ?? '-',
+            $item->barang?->satuan ?? '-',
+            $item->jumlah_stock,
+            $item->minimal,
+            $item->selisih,
+            strtoupper($item->status_alert),
+            $item->rentang_waktu ?? '-',
+            $item->keterangan ?? '-',
+        ])->all();
 
-            foreach ($data as $item) {
-                fputcsv($file, [
-                    $item->barang->nama_barang ?? '-',
-                    $item->barang->satuan ?? '-',
-                    $item->jumlah_stock,
-                    $item->minimal,
-                    $item->selisih,
-                    strtoupper($item->status_alert),
-                    $item->rentang_waktu ?? '-',
-                    $item->keterangan ?? '-'
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Stok Minimal');
     }
 }

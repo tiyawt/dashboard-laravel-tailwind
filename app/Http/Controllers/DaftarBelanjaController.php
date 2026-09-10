@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PengajuanBarang;
+use App\Services\SimpleXlsxExporter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -42,42 +43,28 @@ class DaftarBelanjaController extends Controller
             ->latest()
             ->get();
 
-        $fileName = "laporan_daftar_belanja_{$tahun}_{$bulan}.csv";
-
-        $headers = [
-            "Content-type"        => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
-            "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
-            "Expires"             => "0"
-        ];
-
+        $fileName = "laporan_daftar_belanja_{$tahun}_{$bulan}.xlsx";
         $columns = ['Nama Barang', 'Tgl Pengajuan', 'Divisi Permintaan', 'Volume Dibutuhkan', 'Total Diterima', 'Selisih Kekurangan', 'Harga/Unit', 'Perkiraan Biaya Kurang', 'Status Pemenuhan'];
+        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
-        $callback = function () use ($data, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
+        $rows = $data->map(function ($item) use ($formatDate) {
+            $selisih = $item->selisih;
+            $biayaKurang = $selisih < 0 ? abs($selisih) * $item->harga_per_unit : 0;
+            $statusPemenuhan = $selisih < 0 ? 'BELUM LENGKAP' : 'LENGKAP/LUNAS';
 
-            foreach ($data as $item) {
-                $selisih = $item->selisih;
-                $biayaKurang = $selisih < 0 ? abs($selisih) * $item->harga_per_unit : 0;
-                $statusPemenuhan = $selisih < 0 ? 'BELUM LENGKAP' : 'LENGKAP/LUNAS';
+            return [
+                $item->barang?->nama_barang ?? '-',
+                $formatDate($item->tanggal_pengajuan),
+                $item->permintaan,
+                $item->volume,
+                $item->total_diterima,
+                $selisih,
+                $item->harga_per_unit,
+                $biayaKurang,
+                $statusPemenuhan,
+            ];
+        })->all();
 
-                fputcsv($file, [
-                    $item->barang->nama_barang ?? '-',
-                    $item->tanggal_pengajuan ?? '-',
-                    $item->permintaan,
-                    $item->volume,
-                    $item->total_diterima,
-                    $selisih,
-                    $item->harga_per_unit,
-                    $biayaKurang,
-                    $statusPemenuhan
-                ]);
-            }
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Daftar Belanja');
     }
 }

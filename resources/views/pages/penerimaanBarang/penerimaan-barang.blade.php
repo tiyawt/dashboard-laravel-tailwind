@@ -34,7 +34,7 @@
                 </select>
 
                 <button type="submit" class="inline-flex h-[42px] items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-700">
-                    Download Excel/CSV
+                    Download Excel
                 </button>
             </form>
         </div>

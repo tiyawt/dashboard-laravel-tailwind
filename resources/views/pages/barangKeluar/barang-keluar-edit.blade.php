@@ -117,6 +117,16 @@
             </div>
 
             <!-- 7. Status (Done / Not Yet) -->
+            @if(auth()->user()?->role === 'admin')
+            <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Status Pengambilan
+                </label>
+                <div class="h-[46px] w-full rounded-lg border border-gray-300 bg-gray-50 px-4 flex items-center text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                    NOT YET (Menunggu persetujuan IT)
+                </div>
+            </div>
+            @else
             <div>
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Status Pengambilan <span class="text-red-500">*</span>
@@ -133,6 +143,7 @@
                     </span>
                 </div>
             </div>
+            @endif
 
             <!-- 8. Keterangan -->
             <div class="md:col-span-2">
