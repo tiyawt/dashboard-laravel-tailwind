@@ -47,10 +47,11 @@
 
     <!-- Table Data -->
     <div class="w-full max-w-full overflow-x-auto">
-        <table class="min-w-[1100px] text-left border-collapse">
+        <table class="min-w-[1240px] text-left border-collapse">
             <thead>
                 <tr class="border-gray-200 border-y dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Nama Barang</th>
+                    <th class="px-4 py-3 font-medium text-gray-500 text-sm">Tgl Pengajuan</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Divisi Permintaan</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Volume Dibutuhkan</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Total Diterima</th>
@@ -69,6 +70,9 @@
                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                     <td class="px-4 py-3.5 text-sm font-medium text-gray-800 dark:text-white/90">
                         {{ $item->barang->nama_barang ?? '-' }}
+                    </td>
+                    <td class="px-4 py-3.5 text-sm text-gray-800 dark:text-white/90">
+                        {{ $item->tanggal_pengajuan ? \Carbon\Carbon::parse($item->tanggal_pengajuan)->format('d/m/Y') : '-' }}
                     </td>
                     <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-gray-400">
                         {{ $item->permintaan }}
@@ -111,7 +115,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colspan="9" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                         Belum ada barang pengajuan ACC yang perlu dibeli/dipenuhi.
                     </td>
                 </tr>

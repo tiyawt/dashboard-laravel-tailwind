@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PenerimaanBarang;
 use App\Models\PengajuanBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PenerimaanBarangController extends Controller
 {
@@ -15,9 +16,13 @@ class PenerimaanBarangController extends Controller
         // Ambil data penerimaan beserta pengajuan dan master barangnya
         $penerimaans = PenerimaanBarang::with(['pengajuan.barang'])
             ->when($search, function ($query, $search) {
-                return $query->whereHas('pengajuan.barang', function ($q) use ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%");
-                })->orWhere('penerima', 'like', "%{$search}%");
+                $normalizedSearch = '%' . Str::lower(trim($search)) . '%';
+
+                return $query->where(function ($query) use ($normalizedSearch) {
+                    $query->whereHas('pengajuan.barang', function ($q) use ($normalizedSearch) {
+                        $q->whereRaw('LOWER(nama_barang) LIKE ?', [$normalizedSearch]);
+                    })->orWhereRaw('LOWER(penerima) LIKE ?', [$normalizedSearch]);
+                });
             })
             ->latest()
             ->paginate(10);
@@ -111,7 +116,7 @@ class PenerimaanBarangController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['Nama Barang', 'Status Kondisi', 'Divisi Permintaan', 'Total Pengajuan', 'Tgl Pengambilan', 'Jumlah Diterima', 'Penerima', 'Keterangan'];
+        $columns = ['Nama Barang', 'Tgl Pengajuan', 'Status Kondisi', 'Divisi Permintaan', 'Total Pengajuan', 'Tgl Pengambilan', 'Jumlah Diterima', 'Penerima', 'Keterangan'];
 
         $callback = function () use ($data, $columns) {
             $file = fopen('php://output', 'w');
@@ -120,6 +125,7 @@ class PenerimaanBarangController extends Controller
             foreach ($data as $item) {
                 fputcsv($file, [
                     $item->pengajuan->barang->nama_barang ?? '-',
+                    $item->pengajuan?->tanggal_pengajuan ?? '-',
                     strtoupper($item->pengajuan->status_barang ?? '-'),
                     $item->pengajuan->permintaan ?? '-',
                     $item->pengajuan->volume ?? 0,

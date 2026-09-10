@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PengajuanBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DaftarBelanjaController extends Controller
 {
@@ -15,9 +16,13 @@ class DaftarBelanjaController extends Controller
         $daftarBelanja = PengajuanBarang::with(['barang', 'penerimaan'])
             ->where('status_disposisi', 'acc')
             ->when($search, function ($query, $search) {
-                return $query->whereHas('barang', function ($q) use ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%");
-                })->orWhere('permintaan', 'like', "%{$search}%");
+                $normalizedSearch = '%' . Str::lower(trim($search)) . '%';
+
+                return $query->where(function ($query) use ($normalizedSearch) {
+                    $query->whereHas('barang', function ($q) use ($normalizedSearch) {
+                        $q->whereRaw('LOWER(nama_barang) LIKE ?', [$normalizedSearch]);
+                    })->orWhereRaw('LOWER(permintaan) LIKE ?', [$normalizedSearch]);
+                });
             })
             ->latest()
             ->paginate(10);
@@ -47,7 +52,7 @@ class DaftarBelanjaController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['Nama Barang', 'Divisi Permintaan', 'Volume Dibutuhkan', 'Total Diterima', 'Selisih Kekurangan', 'Harga/Unit', 'Perkiraan Biaya Kurang', 'Status Pemenuhan'];
+        $columns = ['Nama Barang', 'Tgl Pengajuan', 'Divisi Permintaan', 'Volume Dibutuhkan', 'Total Diterima', 'Selisih Kekurangan', 'Harga/Unit', 'Perkiraan Biaya Kurang', 'Status Pemenuhan'];
 
         $callback = function () use ($data, $columns) {
             $file = fopen('php://output', 'w');
@@ -60,6 +65,7 @@ class DaftarBelanjaController extends Controller
 
                 fputcsv($file, [
                     $item->barang->nama_barang ?? '-',
+                    $item->tanggal_pengajuan ?? '-',
                     $item->permintaan,
                     $item->volume,
                     $item->total_diterima,

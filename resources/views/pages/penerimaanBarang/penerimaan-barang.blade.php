@@ -49,10 +49,11 @@
 
     <!-- Table Data -->
     <div class="w-full max-w-full overflow-x-auto">
-        <table class="min-w-[1100px] text-left border-collapse">
+        <table class="min-w-[1240px] text-left border-collapse">
             <thead>
                 <tr class="border-gray-200 border-y dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Nama Barang</th>
+                    <th class="px-4 py-3 font-medium text-gray-500 text-sm">Tgl Pengajuan</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Status Barang</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Divisi Permintaan</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Total Pengajuan</th>
@@ -68,6 +69,9 @@
                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
                     <td class="px-4 py-3.5 text-sm font-medium text-gray-800 dark:text-white/90">
                         {{ $item->pengajuan->barang->nama_barang ?? '-' }}
+                    </td>
+                    <td class="px-4 py-3.5 text-sm text-gray-800 dark:text-white/90">
+                        {{ $item->pengajuan?->tanggal_pengajuan ? \Carbon\Carbon::parse($item->pengajuan->tanggal_pengajuan)->format('d/m/Y') : '-' }}
                     </td>
                     <td class="px-4 py-3.5 text-sm whitespace-nowrap">
                         <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400 capitalize">
@@ -114,7 +118,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colspan="10" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                         Belum ada barang yang di-ACC atau siap diterima.
                     </td>
                 </tr>

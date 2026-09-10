@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StokKeluarLemari;
 use App\Models\MasterBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class BarangKeluarController extends Controller
 {
@@ -14,10 +15,14 @@ class BarangKeluarController extends Controller
 
         $barangKeluar = StokKeluarLemari::with('barang')
             ->when($search, function ($query, $search) {
-                return $query->whereHas('barang', function ($q) use ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%");
-                })->orWhere('pelapor', 'like', "%{$search}%")
-                    ->orWhere('lokasi', 'like', "%{$search}%");
+                $normalizedSearch = '%' . Str::lower(trim($search)) . '%';
+
+                return $query->where(function ($query) use ($normalizedSearch) {
+                    $query->whereHas('barang', function ($q) use ($normalizedSearch) {
+                        $q->whereRaw('LOWER(nama_barang) LIKE ?', [$normalizedSearch]);
+                    })->orWhereRaw('LOWER(pelapor) LIKE ?', [$normalizedSearch])
+                        ->orWhereRaw('LOWER(lokasi) LIKE ?', [$normalizedSearch]);
+                });
             })
             ->latest()
             ->paginate(10);

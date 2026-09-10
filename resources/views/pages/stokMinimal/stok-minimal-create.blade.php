@@ -4,12 +4,28 @@
 <x-common.page-breadcrumb pageTitle="Tambah Barang Master & Minimal Stok" />
 
 <div class="w-full max-w-full rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
-    <form action="{{ route('stok-minimal.store') }}" method="POST">
+    <form
+        action="{{ route('stok-minimal.store') }}"
+        method="POST"
+        x-data="{
+            itemName: @js(old('nama_barang', '')),
+            existingItemNames: @js($existingItemNames),
+            get isDuplicate() {
+                const normalizedName = this.itemName.trim().toLocaleLowerCase();
+                return normalizedName !== '' && this.existingItemNames.some((name) => name.toLocaleLowerCase() === normalizedName);
+            }
+        }">
         @csrf
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
                 <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Nama Barang *</label>
-                <input type="text" name="nama_barang" placeholder="Contoh: Kertas A4 80gr" required class="h-[46px] w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm dark:border-gray-700 dark:text-white" />
+                <input type="text" name="nama_barang" x-model="itemName" placeholder="Contoh: Kertas A4 80gr" required :aria-invalid="isDuplicate" class="h-[46px] w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm dark:border-gray-700 dark:text-white" :class="isDuplicate ? 'border-red-500 focus:border-red-500' : ''" />
+                <p x-cloak x-show="isDuplicate" class="mt-1.5 text-sm text-red-500">
+                    Nama barang sudah terdaftar. Barang yang sama tidak dapat ditambahkan lagi.
+                </p>
+                @error('nama_barang')
+                    <p class="mt-1.5 text-sm text-red-500">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -35,7 +51,7 @@
 
         <div class="mt-6 flex justify-end gap-3 border-t pt-4 dark:border-gray-800">
             <a href="{{ route('stok-minimal.index') }}" class="rounded-lg border px-5 py-2.5 text-sm dark:border-gray-700 dark:text-gray-300">Batal</a>
-            <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700">Simpan Barang</button>
+            <button type="submit" :disabled="isDuplicate" class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">Simpan Barang</button>
         </div>
     </form>
 </div>

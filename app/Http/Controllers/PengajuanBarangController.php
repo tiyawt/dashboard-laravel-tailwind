@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PengajuanBarang;
 use App\Models\MasterBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PengajuanBarangController extends Controller
 {
@@ -14,9 +15,13 @@ class PengajuanBarangController extends Controller
 
         $pengajuans = PengajuanBarang::with('barang')
             ->when($search, function ($query, $search) {
-                return $query->whereHas('barang', function ($q) use ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%");
-                })->orWhere('permintaan', 'like', "%{$search}%");
+                $normalizedSearch = '%' . Str::lower(trim($search)) . '%';
+
+                return $query->where(function ($query) use ($normalizedSearch) {
+                    $query->whereHas('barang', function ($q) use ($normalizedSearch) {
+                        $q->whereRaw('LOWER(nama_barang) LIKE ?', [$normalizedSearch]);
+                    })->orWhereRaw('LOWER(permintaan) LIKE ?', [$normalizedSearch]);
+                });
             })
             ->latest()
             ->paginate(10);

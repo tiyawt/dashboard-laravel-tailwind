@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'superadmin@gmail.com'],
             [
-                'name'     => 'Super Admin Utama',
+                'name'     => 'Super Admin',
                 'email'    => 'superadmin@gmail.com',
                 'password' => Hash::make('abcde'),
                 'role'     => 'superadmin',
@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
             [
-                'name'     => 'Admin Gudang',
+                'name'     => 'Admin',
                 'email'    => 'admin@gmail.com',
                 'password' => Hash::make('abcde'),
                 'role'     => 'admin',

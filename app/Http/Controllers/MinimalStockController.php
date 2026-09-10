@@ -6,6 +6,7 @@ use App\Models\MasterBarang;
 use App\Models\MinimalStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class MinimalStockController extends Controller
 {
@@ -16,8 +17,10 @@ class MinimalStockController extends Controller
         // Eager-loading relasi barang untuk pencarian & kalkulasi
         $minimalStocks = MinimalStock::with('barang')
             ->when($search, function ($query, $search) {
-                return $query->whereHas('barang', function ($q) use ($search) {
-                    $q->where('nama_barang', 'like', "%{$search}%");
+                $normalizedSearch = '%' . Str::lower(trim($search)) . '%';
+
+                return $query->whereHas('barang', function ($q) use ($normalizedSearch) {
+                    $q->whereRaw('LOWER(nama_barang) LIKE ?', [$normalizedSearch]);
                 });
             })
             ->latest()
@@ -28,17 +31,32 @@ class MinimalStockController extends Controller
 
     public function create()
     {
-        return view('pages.stokMinimal.stok-minimal-create');
+        $existingItemNames = MasterBarang::orderBy('nama_barang')->pluck('nama_barang');
+
+        return view('pages.stokMinimal.stok-minimal-create', compact('existingItemNames'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama_barang'   => 'required|string|unique:master_barang,nama_barang',
+            'nama_barang'   => [
+                'required',
+                'string',
+                'unique:master_barang,nama_barang',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $exists = MasterBarang::whereRaw('LOWER(nama_barang) = ?', [Str::lower(trim($value))])->exists();
+
+                    if ($exists) {
+                        $fail('Nama barang sudah terdaftar. Barang yang sama tidak dapat ditambahkan lagi.');
+                    }
+                },
+            ],
             'satuan'        => 'required|string',
             'minimal'       => 'required|numeric|min:0',
             'rentang_waktu' => 'nullable|string',
             'keterangan'    => 'nullable|string',
+        ], [
+            'nama_barang.unique' => 'Nama barang sudah terdaftar. Barang yang sama tidak dapat ditambahkan lagi.',
         ]);
 
         // Simpan serentak ke master_barang dan minimal_stock
@@ -70,11 +88,26 @@ class MinimalStockController extends Controller
         $minimalStock = MinimalStock::findOrFail($id);
 
         $request->validate([
-            'nama_barang'   => 'required|string|unique:master_barang,nama_barang,' . $minimalStock->barang_id,
+            'nama_barang'   => [
+                'required',
+                'string',
+                'unique:master_barang,nama_barang,' . $minimalStock->barang_id,
+                function (string $attribute, mixed $value, \Closure $fail) use ($minimalStock): void {
+                    $exists = MasterBarang::where('id', '!=', $minimalStock->barang_id)
+                        ->whereRaw('LOWER(nama_barang) = ?', [Str::lower(trim($value))])
+                        ->exists();
+
+                    if ($exists) {
+                        $fail('Nama barang sudah terdaftar. Gunakan nama barang yang berbeda.');
+                    }
+                },
+            ],
             'satuan'        => 'required|string',
             'minimal'       => 'required|numeric|min:0',
             'rentang_waktu' => 'nullable|string',
             'keterangan'    => 'nullable|string',
+        ], [
+            'nama_barang.unique' => 'Nama barang sudah terdaftar. Gunakan nama barang yang berbeda.',
         ]);
 
         DB::transaction(function () use ($request, $minimalStock) {

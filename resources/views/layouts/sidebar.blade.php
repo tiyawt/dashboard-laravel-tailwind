@@ -59,7 +59,7 @@ $currentPath = request()->path();
     <div class="pt-8 pb-7 flex items-center gap-2" :class="(!$store.sidebar.isExpanded && !$store.sidebar.isHovered && !$store.sidebar.isMobileOpen) ? 'justify-center' : 'justify-between'">
         <a href="/">
             <div class="hidden [.sidebar-expanded_&]:block">
-                <span class="text-xl font-bold text-gray-900 dark:text-white">
+                <span class="text-2xl font-bold text-blue-500 dark:text-white">
                     Manajemen Barang
                 </span>
             </div>
