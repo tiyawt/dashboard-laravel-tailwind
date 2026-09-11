@@ -20,7 +20,7 @@ class MinimalStock extends Model
 
     // --- ACCESSOR / KALKULASI OTOMATIS ---
 
-    // Ambil jumlah stock dari MasterBarang
+    // Tampilkan stok fisik saat ini setelah dikurangi barang keluar.
     public function getJumlahStockAttribute(): int
     {
         return $this->barang ? $this->barang->jumlah_stock : 0;

@@ -15,7 +15,7 @@ class RestrictAdminToBarangKeluar
     {
         if (
             $request->user()?->role === 'admin'
-            && !$request->routeIs(['barang-keluar.*', 'logout'])
+            && !$request->routeIs(['barang-keluar.*', 'profile.*', 'logout'])
         ) {
             return redirect()->route('barang-keluar.index');
         }

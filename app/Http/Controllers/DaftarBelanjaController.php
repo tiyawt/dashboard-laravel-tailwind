@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PengajuanBarang;
 use App\Services\SimpleXlsxExporter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class DaftarBelanjaController extends Controller
@@ -12,6 +13,10 @@ class DaftarBelanjaController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
+
+        $totalDiterima = DB::table('penerimaan_barang')
+            ->selectRaw('COALESCE(SUM(jumlah_diterima), 0)')
+            ->whereColumn('pengajuan_barang_id', 'pengajuan_barang.id');
 
         // Mengambil pengajuan yang statusnya 'acc' beserta relasi barang & penerimaannya
         $daftarBelanja = PengajuanBarang::with(['barang', 'penerimaan'])
@@ -25,7 +30,9 @@ class DaftarBelanjaController extends Controller
                     })->orWhereRaw('LOWER(permintaan) LIKE ?', [$normalizedSearch]);
                 });
             })
-            ->latest()
+            ->orderByRaw("CASE WHEN ({$totalDiterima->toSql()}) < pengajuan_barang.volume THEN 0 ELSE 1 END", $totalDiterima->getBindings())
+            ->orderByDesc('tanggal_pengajuan')
+            ->orderByDesc('id')
             ->paginate(10);
 
         return view('pages.daftarBelanja.daftar-belanja', compact('daftarBelanja'));
@@ -45,7 +52,7 @@ class DaftarBelanjaController extends Controller
 
         $fileName = "laporan_daftar_belanja_{$tahun}_{$bulan}.xlsx";
         $columns = ['Nama Barang', 'Tgl Pengajuan', 'Divisi Permintaan', 'Volume Dibutuhkan', 'Total Diterima', 'Selisih Kekurangan', 'Harga/Unit', 'Perkiraan Biaya Kurang', 'Status Pemenuhan'];
-        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
+        $formatDate = static fn($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
         $rows = $data->map(function ($item) use ($formatDate) {
             $selisih = $item->selisih;

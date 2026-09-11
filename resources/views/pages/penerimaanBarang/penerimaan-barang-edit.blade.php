@@ -33,7 +33,7 @@
                 </label>
                 <x-form.date-picker
                     name="tanggal_pengambilan"
-                    value="{{ date('Y-m-d') }}"
+                    value="{{ old('tanggal_pengambilan', $penerimaan->tanggal_pengambilan ?? date('Y-m-d')) }}"
                     required />
             </div>
 
@@ -45,11 +45,14 @@
                 <input type="number"
                     name="jumlah_diterima"
                     min="1"
-                    max="{{ $penerimaan->pengajuan->volume }}"
-                    value="{{ old('jumlah_diterima', $penerimaan->jumlah_diterima) }}"
-                    placeholder="Masukkan jumlah barang yang sampai"
+                    max="{{ $sisaPengajuan }}"
+                    value="{{ old('jumlah_diterima') }}"
+                    placeholder="Masukkan jumlah tambahan yang baru datang"
                     required
                     class="h-[46px] w-full rounded-lg border border-gray-300 bg-transparent px-4 text-sm text-gray-800 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+                <p class="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                    Sudah diterima: {{ $sudahDiterima }} {{ $penerimaan->pengajuan->barang->satuan }}. Sisa yang dapat ditambahkan: {{ $sisaPengajuan }} {{ $penerimaan->pengajuan->barang->satuan }}
+                </p>
             </div>
 
             <!-- Penerima -->

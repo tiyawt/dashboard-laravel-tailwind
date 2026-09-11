@@ -9,6 +9,12 @@
 </div>
 @endif
 
+@if(session('info'))
+<div class="mb-4 flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-700 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
+    <span class="text-sm font-medium">{{ session('info') }}</span>
+</div>
+@endif
+
 <div class="w-full max-w-full overflow-hidden rounded-2xl border border-gray-200 bg-white pt-4 dark:border-gray-800 dark:bg-white/[0.03]">
     <!-- Header & Search -->
     <div class="mb-4 flex min-w-0 flex-col gap-2 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
@@ -98,12 +104,21 @@
                     </td>
                     <td class="px-4 py-3.5 text-sm text-center">
                         <div class="flex items-center justify-center gap-2">
-                            <a href="{{ route('penerimaan.edit', $item->id) }}" class="p-1.5 text-gray-500 hover:text-blue-600" title="Edit Catatan">
-                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                                    <path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="currentColor" />
-                                    <path d="M11.3787 5.79289L3 14.1716V17H5.82843L14.2071 8.62132L11.3787 5.79289Z" fill="currentColor" />
-                                </svg>
+                            @php($sudahTerpenuhi = ($item->pengajuan->total_diterima ?? 0) >= ($item->pengajuan->volume ?? 0))
+                            @if($sudahTerpenuhi)
+                            <button type="button" disabled class="cursor-not-allowed p-1.5 text-gray-300 dark:text-gray-600" title="Pengajuan sudah terpenuhi">
+                                @else
+                                <a href="{{ route('penerimaan.edit', $item->id) }}" class="p-1.5 text-gray-500 hover:text-blue-600" title="Edit Catatan">
+                                    @endif
+                                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                                        <path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="currentColor" />
+                                        <path d="M11.3787 5.79289L3 14.1716V17H5.82843L14.2071 8.62132L11.3787 5.79289Z" fill="currentColor" />
+                                    </svg>
+                                    @if($sudahTerpenuhi)
+                            </button>
+                            @else
                             </a>
+                            @endif
                             <form action="{{ route('penerimaan.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data penerimaan ini?')">
                                 @csrf
                                 @method('DELETE')

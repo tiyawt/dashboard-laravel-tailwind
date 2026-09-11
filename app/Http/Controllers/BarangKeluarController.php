@@ -26,7 +26,8 @@ class BarangKeluarController extends Controller
                         ->orWhereRaw('LOWER(lokasi) LIKE ?', [$normalizedSearch]);
                 });
             })
-            ->latest()
+            ->orderByDesc('tanggal_keluar')
+            ->orderByDesc('id')
             ->paginate(10);
 
         return view('pages.barangKeluar.barang-keluar', compact('barangKeluar'));
@@ -186,9 +187,9 @@ class BarangKeluarController extends Controller
 
         $fileName = "laporan_barang_keluar_{$tahun}_{$bulan}.xlsx";
         $columns = ['Tanggal Keluar', 'Nama Barang', 'Jumlah', 'Satuan', 'Pelapor', 'Lokasi', 'Status', 'Keterangan'];
-        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
+        $formatDate = static fn($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
-        $rows = $data->map(fn ($item) => [
+        $rows = $data->map(fn($item) => [
             $formatDate($item->tanggal_keluar),
             $item->barang?->nama_barang ?? '-',
             $item->jumlah,

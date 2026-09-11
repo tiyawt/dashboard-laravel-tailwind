@@ -24,7 +24,8 @@ class PengajuanBarangController extends Controller
                     })->orWhereRaw('LOWER(permintaan) LIKE ?', [$normalizedSearch]);
                 });
             })
-            ->latest()
+            ->orderByDesc('tanggal_pengajuan')
+            ->orderByDesc('id')
             ->paginate(10);
 
         $masterBarang = MasterBarang::all();
@@ -122,9 +123,9 @@ class PengajuanBarangController extends Controller
 
         $fileName = "laporan_pengajuan_barang_{$tahun}_{$bulan}.xlsx";
         $columns = ['Tanggal Pengajuan', 'Nama Barang', 'Volume', 'Harga/Unit', 'Total Harga', 'Permintaan (Divisi)', 'Status Barang', 'Status Disposisi', 'Link SPB/Invoice', 'Keterangan'];
-        $formatDate = static fn ($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
+        $formatDate = static fn($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
 
-        $rows = $data->map(fn ($item) => [
+        $rows = $data->map(fn($item) => [
             $formatDate($item->tanggal_pengajuan),
             $item->barang?->nama_barang ?? '-',
             $item->volume,

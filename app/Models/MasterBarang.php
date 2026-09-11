@@ -35,11 +35,12 @@ class MasterBarang extends Model
     // 1. Total Barang Diterima (Dari seluruh pengajuan yang berstatus 'acc')
     public function getTotalDiterimaAttribute(): int
     {
-        return (int) $this->pengajuan()
-            ->where('status_disposisi', 'acc')
-            ->withSum('penerimaan', 'jumlah_diterima')
-            ->get()
-            ->sum('penerimaan_sum_jumlah_diterima');
+        return (int) PenerimaanBarang::query()
+            ->whereHas('pengajuan', function ($query) {
+                $query->where('barang_id', $this->id)
+                    ->where('status_disposisi', 'acc');
+            })
+            ->sum('jumlah_diterima');
     }
 
     // 2. Total Barang Keluar (Hanya yang berstatus 'done')

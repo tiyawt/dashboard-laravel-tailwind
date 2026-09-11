@@ -59,7 +59,6 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::get('/penerimaan-barang', [PenerimaanBarangController::class, 'index'])->name('penerimaan.index');
     Route::get('/penerimaan-barang/{id}/edit', [PenerimaanBarangController::class, 'edit'])->name('penerimaan.edit');
     Route::put('/penerimaan-barang/{id}', [PenerimaanBarangController::class, 'update'])->name('penerimaan.update');
-    Route::post('/penerimaan-barang/partial/{pengajuan_id}', [PenerimaanBarangController::class, 'storePartial'])->name('penerimaan.store-partial');
     Route::delete('/penerimaan-barang/{id}', [PenerimaanBarangController::class, 'destroy'])->name('penerimaan.destroy');
 
     // Route Stock Minimal

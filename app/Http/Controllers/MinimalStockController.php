@@ -15,8 +15,26 @@ class MinimalStockController extends Controller
     {
         $search = $request->input('search');
 
+        $totalDiterima = DB::table('penerimaan_barang')
+            ->join('pengajuan_barang', 'pengajuan_barang.id', '=', 'penerimaan_barang.pengajuan_barang_id')
+            ->selectRaw('COALESCE(SUM(penerimaan_barang.jumlah_diterima), 0)')
+            ->whereColumn('pengajuan_barang.barang_id', 'master_barang.id')
+            ->where('pengajuan_barang.status_disposisi', 'acc');
+
+        $totalKeluar = DB::table('stok_keluar_lemari')
+            ->selectRaw('COALESCE(SUM(jumlah), 0)')
+            ->whereColumn('barang_id', 'master_barang.id')
+            ->where('status', 'done');
+
+        $stokSaatIni = "(COALESCE(({$totalDiterima->toSql()}), 0) - COALESCE(({$totalKeluar->toSql()}), 0))";
+
         // Eager-loading relasi barang untuk pencarian & kalkulasi
-        $minimalStocks = MinimalStock::with('barang')
+        $minimalStocks = MinimalStock::query()
+            ->select('minimal_stock.*')
+            ->join('master_barang', 'master_barang.id', '=', 'minimal_stock.barang_id')
+            ->selectSub($totalDiterima, 'total_diterima_calc')
+            ->selectSub($totalKeluar, 'total_keluar_calc')
+            ->with('barang')
             ->when($search, function ($query, $search) {
                 $normalizedSearch = '%' . Str::lower(trim($search)) . '%';
 
@@ -24,7 +42,20 @@ class MinimalStockController extends Controller
                     $q->whereRaw('LOWER(nama_barang) LIKE ?', [$normalizedSearch]);
                 });
             })
-            ->latest()
+            ->orderByRaw(
+                "CASE
+                    WHEN {$stokSaatIni} <= 0 THEN 0
+                    WHEN {$stokSaatIni} <= minimal_stock.minimal THEN 1
+                    ELSE 2
+                END",
+                array_merge(
+                    $totalDiterima->getBindings(),
+                    $totalKeluar->getBindings(),
+                    $totalDiterima->getBindings(),
+                    $totalKeluar->getBindings()
+                )
+            )
+            ->orderBy('master_barang.nama_barang')
             ->paginate(10);
 
         return view('pages.stokMinimal.stok-minimal', compact('minimalStocks'));
@@ -146,7 +177,7 @@ class MinimalStockController extends Controller
         $fileName = "laporan_stok_minimal_" . date('Y-m-d') . ".xlsx";
         $columns = ['Nama Barang', 'Satuan', 'Jumlah Stok Fisik', 'Batas Minimal', 'Selisih', 'Status Alert', 'Rentang Waktu', 'Keterangan'];
 
-        $rows = $data->map(fn ($item) => [
+        $rows = $data->map(fn($item) => [
             $item->barang?->nama_barang ?? '-',
             $item->barang?->satuan ?? '-',
             $item->jumlah_stock,

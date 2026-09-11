@@ -8,6 +8,7 @@ $user = auth()->user() ?? \App\Models\User::first();
 $avatarUrl = $user->avatar
 ? asset('storage/' . $user->avatar)
 : 'https://ui-avatars.com/api/?name=' . urlencode($user->name ?? 'User') . '&background=0D8ABC&color=fff&size=128';
+$isAdmin = ($user->role ?? '') === 'admin';
 @endphp
 
 <div x-data="{
@@ -92,6 +93,7 @@ $avatarUrl = $user->avatar
 
                     </div>
                 </div>
+                @if(!$isAdmin)
                 <div>
                     <button @click="isProfileInfoModal = true"
                         class="shadow-theme-xs flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-800 lg:inline-flex lg:w-auto dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
@@ -104,12 +106,14 @@ $avatarUrl = $user->avatar
                         Edit
                     </button>
                 </div>
+                @endif
             </div>
         </div>
 
 
     </div>
 
+    @if(!$isAdmin)
     <!-- BEGIN MODAL: Profile Info -->
     <div x-show="isProfileInfoModal" x-cloak
         class="fixed inset-0 z-99999 flex items-center justify-center overflow-y-auto p-5">
@@ -118,7 +122,7 @@ $avatarUrl = $user->avatar
             class="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 lg:p-11 dark:bg-gray-900">
             <!-- close btn -->
             <button @click="isProfileInfoModal = false"
-                class="transition-color absolute top-5 ltr:right-5 rtl:left-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-700 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
+                class="transition-color absolute top-5 ltr:right-5 rtl:left-5 z-999 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:bg-white/[0.05] dark:text-gray-400 dark:hover:bg-white/[0.07] dark:hover:text-gray-300">
                 <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -224,6 +228,7 @@ $avatarUrl = $user->avatar
         </div>
     </div>
     <!-- END MODAL: Profile Info -->
+    @endif
 
 </div>
 @endsection

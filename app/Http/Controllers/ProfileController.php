@@ -19,8 +19,13 @@ class ProfileController extends Controller
 
     public function update(Request $request)
     {
-        
         $user = Auth::user() ?? User::first();
+
+        if ($user->role === 'admin') {
+            return redirect()
+                ->route('profile.index')
+                ->withErrors(['profile' => 'Admin hanya dapat melihat profil dan tidak dapat mengubahnya.']);
+        }
 
         $validated = $request->validate([
             'name'   => 'required|string|max:255',
