@@ -55,7 +55,10 @@ class PengajuanBarangController extends Controller
     public function create()
     {
         $masterBarang = \App\Models\MasterBarang::all();
-        return view('pages.pengajuanBarang.pengajuan-barang-create', compact('masterBarang'));
+        return view('pages.pengajuanBarang.form', [
+            'pengajuan' => new PengajuanBarang(),
+            'masterBarang' => $masterBarang,
+        ]);
     }
 
     public function edit($id)
@@ -63,7 +66,7 @@ class PengajuanBarangController extends Controller
         $pengajuan = PengajuanBarang::findOrFail($id);
         $masterBarang = MasterBarang::all();
 
-        return view('pages.pengajuanBarang.pengajuan-barang-edit', compact('pengajuan', 'masterBarang'));
+        return view('pages.pengajuanBarang.form', compact('pengajuan', 'masterBarang'));
     }
 
     public function update(Request $request, $id)

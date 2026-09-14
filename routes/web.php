@@ -7,6 +7,7 @@ use App\Http\Controllers\MinimalStockController;
 use App\Http\Controllers\PenerimaanBarangController;
 use App\Http\Controllers\DaftarBelanjaController;
 use App\Http\Controllers\BarangKeluarController;
+use App\Http\Controllers\AsetInventarisController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthenticatedSessionController;
 
@@ -76,6 +77,16 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::get('/barang-keluar/{id}/edit', [BarangKeluarController::class, 'edit'])->name('barang-keluar.edit');
     Route::put('/barang-keluar/{id}', [BarangKeluarController::class, 'update'])->name('barang-keluar.update');
     Route::delete('/barang-keluar/{id}', [BarangKeluarController::class, 'destroy'])->name('barang-keluar.destroy');
+
+    // Route Aset & Inventaris
+    Route::get('/aset-inventaris', [AsetInventarisController::class, 'index'])->name('aset-inventaris.index');
+    Route::get('/aset-inventaris/scan', [AsetInventarisController::class, 'scan'])->name('aset-inventaris.scan');
+    Route::get('/aset-inventaris/create', [AsetInventarisController::class, 'create'])->name('aset-inventaris.create');
+    Route::post('/aset-inventaris', [AsetInventarisController::class, 'store'])->name('aset-inventaris.store');
+    Route::get('/aset-inventaris/{id}/edit', [AsetInventarisController::class, 'edit'])->name('aset-inventaris.edit');
+    Route::put('/aset-inventaris/{id}', [AsetInventarisController::class, 'update'])->name('aset-inventaris.update');
+    Route::get('/aset-inventaris/{id}', [AsetInventarisController::class, 'show'])->name('aset-inventaris.show');
+    Route::post('/aset-inventaris/{id}/maintenance', [AsetInventarisController::class, 'storeMaintenance'])->name('aset-inventaris.maintenance.store');
 
     // Profile Pages
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

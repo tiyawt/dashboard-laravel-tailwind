@@ -65,7 +65,10 @@ class MinimalStockController extends Controller
     {
         $existingItemNames = MasterBarang::orderBy('nama_barang')->pluck('nama_barang');
 
-        return view('pages.stokMinimal.stok-minimal-create', compact('existingItemNames'));
+        return view('pages.stokMinimal.form', [
+            'minimalStock' => new MinimalStock(),
+            'existingItemNames' => $existingItemNames,
+        ]);
     }
 
     public function store(Request $request)
@@ -112,7 +115,11 @@ class MinimalStockController extends Controller
     public function edit($id)
     {
         $minimalStock = MinimalStock::with('barang')->findOrFail($id);
-        return view('pages.stokMinimal.stok-minimal-edit', compact('minimalStock'));
+        $existingItemNames = MasterBarang::where('id', '!=', $minimalStock->barang_id)
+            ->orderBy('nama_barang')
+            ->pluck('nama_barang');
+
+        return view('pages.stokMinimal.form', compact('minimalStock', 'existingItemNames'));
     }
 
     public function update(Request $request, $id)

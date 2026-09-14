@@ -21,6 +21,7 @@
     request()->routeIs('barang-keluar.index') => 'Stok Keluar Lemari',
     request()->routeIs('barang-keluar.create') => 'Catat Barang Keluar',
     request()->routeIs('barang-keluar.edit') => 'Edit Catatan Barang Keluar',
+    request()->routeIs('aset-inventaris.*') => 'Aset & Inventaris',
     request()->routeIs('profile.index') => 'User Profile',
     default => 'Dashboard',
     };

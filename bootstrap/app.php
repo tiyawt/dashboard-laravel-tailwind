@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
 
+        $middleware->trustProxies(at: '*');
+
+
         // 2. Daftarkan alias middleware 'prevent-back'
         $middleware->alias([
             'prevent-back' => PreventBackHistory::class,

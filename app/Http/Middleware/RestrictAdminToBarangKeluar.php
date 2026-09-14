@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 class RestrictAdminToBarangKeluar
 {
     /**
-     * Batasi admin agar hanya dapat mengakses halaman Barang Keluar.
+     * Batasi admin agar hanya dapat mengakses Barang Keluar dan profile.
      */
     public function handle(Request $request, Closure $next): Response
     {

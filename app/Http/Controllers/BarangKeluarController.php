@@ -36,7 +36,10 @@ class BarangKeluarController extends Controller
     public function create()
     {
         $masterBarang = MasterBarang::all();
-        return view('pages.barangKeluar.barang-keluar-create', compact('masterBarang'));
+        return view('pages.barangKeluar.form', [
+            'barangKeluar' => new StokKeluarLemari(),
+            'masterBarang' => $masterBarang,
+        ]);
     }
 
     public function store(Request $request)
@@ -96,7 +99,7 @@ class BarangKeluarController extends Controller
 
         $masterBarang = MasterBarang::all();
 
-        return view('pages.barangKeluar.barang-keluar-edit', compact('barangKeluar', 'masterBarang'));
+        return view('pages.barangKeluar.form', compact('barangKeluar', 'masterBarang'));
     }
 
     public function update(Request $request, $id)

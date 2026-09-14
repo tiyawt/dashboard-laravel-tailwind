@@ -1,30 +1,22 @@
-import { createPopper } from '@popperjs/core';
-import './bootstrap';
-import Alpine from 'alpinejs';
-import ApexCharts from 'apexcharts';
+import { createPopper } from "@popperjs/core";
+import "./bootstrap";
+import Alpine from "alpinejs";
+import ApexCharts from "apexcharts";
+import flatpickr from "flatpickr";
+import "flatpickr/dist/flatpickr.min.css";
+import { Calendar } from "fullcalendar";
 
-// flatpickr
-import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.min.css';
-// FullCalendar
-import { Calendar } from 'fullcalendar';
-
-
+import "./asset-inventory";
 
 window.Alpine = Alpine;
 window.createPopper = createPopper;
 window.ApexCharts = ApexCharts;
 window.flatpickr = flatpickr;
-window.FullCalendar = Calendar;
 
 Alpine.start();
 
-// Initialize components on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Map imports
-    if (document.querySelector('#mapOne')) {
-        import('./components/map').then(module => module.initMap());
+window.addEventListener("load", () => {
+    if (document.querySelector("#mapOne")) {
+        import("./components/map").then((module) => module.initMap());
     }
-
-    
 });
