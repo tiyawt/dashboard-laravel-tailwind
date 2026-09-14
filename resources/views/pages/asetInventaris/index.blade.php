@@ -37,12 +37,18 @@
             </div>
             <button type="submit" class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Cari</button>
         </form>
+        <button type="button" @click="printBarcodes()" :disabled="!selectedIds.length || printInProgress" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+            <span x-text="printInProgress ? 'Menyiapkan...' : `Cetak Barcode${selectedIds.length ? ` (${selectedIds.length})` : ''}`"></span>
+        </button>
     </div>
 
     <div class="w-full overflow-x-auto">
         <table class="min-w-[980px] w-full text-start">
             <thead>
                 <tr class="border-y border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
+                    <th class="w-12 px-4 py-3 text-start">
+                        <input type="checkbox" @change="toggleAll($event.target.checked)" :checked="allSelected" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" aria-label="Pilih semua aset di halaman ini">
+                    </th>
                     @foreach(['No. Inventaris','Nama Barang','Spesifikasi','Lantai','Lokasi','User','Keterangan','Aksi'] as $heading)
                     <th class="px-4 py-3 text-start text-sm font-semibold text-gray-500">{{ $heading }}</th>
                     @endforeach
@@ -51,6 +57,9 @@
             <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
                 @forelse($aset as $item)
                 <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                    <td class="px-4 py-4">
+                        <input type="checkbox" value="{{ $item->id }}" x-model.number="selectedIds" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" aria-label="Pilih {{ $item->no_inventaris }}">
+                    </td>
                     <td class="px-4 py-4 text-sm font-semibold text-gray-800 dark:text-white/90">{{ $item->no_inventaris }}</td>
                     <td class="px-4 py-4 text-sm text-gray-800 dark:text-white/90">{{ $item->nama_barang }}</td>
                     <td class="max-w-[220px] truncate px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{{ $item->spesifikasi ?: '-' }}</td>
@@ -67,7 +76,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data aset inventaris.</td>
+                    <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data aset inventaris.</td>
                 </tr>
                 @endforelse
             </tbody>

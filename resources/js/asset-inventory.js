@@ -1,5 +1,7 @@
 const scannerScriptUrl =
     "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
+const barcodeScriptUrl =
+    "https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js";
 
 function loadScannerLibrary() {
     if (window.Html5Qrcode) return Promise.resolve();
@@ -10,6 +12,19 @@ function loadScannerLibrary() {
         script.onload = resolve;
         script.onerror = () =>
             reject(new Error("Scanner library gagal dimuat."));
+        document.head.appendChild(script);
+    });
+}
+
+function loadBarcodeLibrary() {
+    if (window.JsBarcode) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = barcodeScriptUrl;
+        script.onload = resolve;
+        script.onerror = () =>
+            reject(new Error("Barcode library gagal dimuat."));
         document.head.appendChild(script);
     });
 }
@@ -27,6 +42,120 @@ function assetInventoryPage(items, config) {
         lookupInProgress: false,
         qrScanner: null,
         scannerMessage: "Arahkan kamera ke barcode aset.",
+        pendingScan: "",
+        pendingScanCount: 0,
+        selectedIds: [],
+        printInProgress: false,
+
+        get allSelected() {
+            return (
+                this.items.length > 0 &&
+                this.items.every((item) =>
+                    this.selectedIds.includes(Number(item.id)),
+                )
+            );
+        },
+
+        toggleAll(checked) {
+            const pageIds = this.items.map((item) => Number(item.id));
+            this.selectedIds = checked
+                ? [...new Set([...this.selectedIds, ...pageIds])]
+                : this.selectedIds.filter((id) => !pageIds.includes(id));
+        },
+
+        escapeHtml(value) {
+            return String(value ?? "-").replace(
+                /[&<>'"]/g,
+                (character) =>
+                    ({
+                        "&": "&amp;",
+                        "<": "&lt;",
+                        ">": "&gt;",
+                        "'": "&#039;",
+                        '"': "&quot;",
+                    })[character],
+            );
+        },
+
+        async printBarcodes() {
+            const selectedItems = this.items.filter((item) =>
+                this.selectedIds.includes(Number(item.id)),
+            );
+            if (!selectedItems.length || this.printInProgress) return;
+
+            this.printInProgress = true;
+            const printWindow = window.open(
+                "",
+                "_blank",
+                "width=900,height=700",
+            );
+            if (!printWindow) {
+                this.printInProgress = false;
+                window.alert(
+                    "Popup cetak diblokir browser. Izinkan popup untuk halaman ini lalu coba lagi.",
+                );
+                return;
+            }
+
+            try {
+                await loadBarcodeLibrary();
+                const labels = selectedItems
+                    .map((item) => {
+                        const inventoryNumber = String(
+                            item.no_inventaris || "",
+                        ).trim();
+                        const barcode = document.createElementNS(
+                            "http://www.w3.org/2000/svg",
+                            "svg",
+                        );
+                        barcode.setAttribute(
+                            "preserveAspectRatio",
+                            "xMidYMid meet",
+                        );
+                        window.JsBarcode(barcode, inventoryNumber, {
+                            format: "CODE128",
+                            displayValue: false,
+                            width: 2,
+                            height: 120,
+                            margin: 4,
+                        });
+
+                        return `<article class="label">
+                        <h1>RS Khusus Ginjal NY RA Habibie</h1>
+                        ${barcode.outerHTML}
+                        <h2>${this.escapeHtml(item.nama_barang || "-")}</h2>
+                        <p class="inventory-number">${this.escapeHtml(inventoryNumber)}</p>
+                        <p><strong>Lokasi:</strong> ${this.escapeHtml(item.lokasi || "-")}</p>
+                    </article>`;
+                    })
+                    .join("");
+                printWindow.document
+                    .write(`<!doctype html><html><head><title>Cetak Barcode Aset</title><style>
+                    @page { size: A4; margin: 8mm; }
+                    * { box-sizing: border-box; }
+                    body { margin: 0; font-family: Arial, sans-serif; color: #111827; }
+                    .sheet { display: grid; grid-template-columns: repeat(2, 70mm); gap: 2mm; align-items: start; }
+                    .label { width: 70mm; height: 49mm; break-inside: avoid; overflow: hidden; border: 1px solid #d1d5db; padding: 3mm; text-align: center; }
+                    h1 { margin: 0 0 1mm; font-size: 11pt; font-weight: 400; white-space: nowrap; }
+                    h2 { margin: 0; font-size: 12pt; font-weight: 400; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                    svg { display: block; width: 59mm; height: 23mm; margin: 0 auto; shape-rendering: crispEdges; }
+                    p { margin: 1mm 0 0; font-size: 8pt; line-height: 1.1; text-align: center; }
+                    .inventory-number { font-size: 12pt; }
+                    @media print { .label { border-color: #9ca3af; } }
+                </style></head><body><main class="sheet">${labels}</main></body></html>`);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+            } catch (error) {
+                console.error("Barcode print error:", error);
+                printWindow.close();
+                window.alert(
+                    "Barcode gagal disiapkan. Pastikan koneksi internet tersedia dan popup tidak diblokir.",
+                );
+            } finally {
+                this.printInProgress = false;
+            }
+        },
 
         get detailFields() {
             return this.selected
@@ -118,26 +247,19 @@ function assetInventoryPage(items, config) {
                 }
 
                 this.qrScanner = new window.Html5Qrcode("barcode-reader");
-                const formats = window.Html5QrcodeSupportedFormats;
+                const formats = window.Html5QrcodeSupportedFormats || {};
                 const scannerConfig = {
-                    fps: 10,
-                    qrbox: { width: 300, height: 150 },
-                    formatsToSupport: [
-                        formats.QR_CODE,
-                        formats.CODE_128,
-                        formats.CODE_39,
-                        formats.CODE_93,
-                        formats.EAN_13,
-                        formats.EAN_8,
-                        formats.UPC_A,
-                        formats.UPC_E,
-                    ],
+                    fps: 15,
+                    qrbox: { width: 320, height: 180 },
+                    formatsToSupport: [formats.CODE_128].filter(
+                        (format) => format !== undefined,
+                    ),
                 };
 
                 await this.qrScanner.start(
                     { facingMode: "environment" },
                     scannerConfig,
-                    (decodedText) => this.lookup(decodedText),
+                    (decodedText) => this.confirmScan(decodedText),
                     () => {},
                 );
                 this.scannerMessage =
@@ -151,6 +273,28 @@ function assetInventoryPage(items, config) {
 
         findByCode() {
             this.lookup(this.$refs.manualCode.value);
+        },
+
+        confirmScan(code) {
+            const normalizedCode = String(code || "").trim();
+            if (!normalizedCode || this.lookupInProgress) return;
+
+            if (normalizedCode === this.pendingScan) {
+                this.pendingScanCount += 1;
+            } else {
+                this.pendingScan = normalizedCode;
+                this.pendingScanCount = 1;
+            }
+
+            if (this.pendingScanCount < 2) {
+                this.scannerMessage =
+                    "Barcode terbaca. Tahan kamera sebentar untuk konfirmasi...";
+                return;
+            }
+
+            this.pendingScan = "";
+            this.pendingScanCount = 0;
+            this.lookup(normalizedCode);
         },
 
         async lookup(code) {
