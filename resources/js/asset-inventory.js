@@ -134,11 +134,11 @@ function assetInventoryPage(items, config) {
                     @page { size: A4; margin: 8mm; }
                     * { box-sizing: border-box; }
                     body { margin: 0; font-family: Arial, sans-serif; color: #111827; }
-                    .sheet { display: grid; grid-template-columns: repeat(2, 70mm); gap: 2mm; align-items: start; }
-                    .label { width: 70mm; height: 49mm; break-inside: avoid; overflow: hidden; border: 1px solid #d1d5db; padding: 3mm; text-align: center; }
+                    .sheet { display: grid; grid-template-columns: repeat(2, 70mm); grid-auto-rows: 49mm; width: 142mm; gap: 2mm; align-items: start; }
+                    .label { box-sizing: border-box; width: 70mm; min-width: 70mm; max-width: 70mm; height: 49mm; min-height: 49mm; max-height: 49mm; break-inside: avoid; overflow: hidden; border: 1px solid #d1d5db; padding: 3mm; text-align: center; }
                     h1 { margin: 0 0 1mm; font-size: 11pt; font-weight: 400; white-space: nowrap; }
                     h2 { margin: 0; font-size: 12pt; font-weight: 400; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-                    svg { display: block; width: 59mm; height: 23mm; margin: 0 auto; shape-rendering: crispEdges; }
+                    svg { display: block; width: 59mm !important; height: 23mm !important; max-width: 59mm; margin: 0 auto; shape-rendering: crispEdges; }
                     p { margin: 1mm 0 0; font-size: 8pt; line-height: 1.1; text-align: center; }
                     .inventory-number { font-size: 12pt; }
                     @media print { .label { border-color: #9ca3af; } }

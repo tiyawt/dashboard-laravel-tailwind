@@ -45,9 +45,8 @@ class PenerimaanBarangController extends Controller
                     );
                 });
             })
-            ->orderByRaw('CASE WHEN COALESCE(total_penerimaan.total_diterima, 0) >= pengajuan_barang.volume THEN 1 ELSE 0 END')
-            ->orderBy('pengajuan_barang.tanggal_pengajuan')
-            ->orderBy('penerimaan_barang.id')
+            ->orderByDesc('pengajuan_barang.tanggal_pengajuan')
+            ->orderByDesc('penerimaan_barang.id')
             ->paginate(10)
             ->withQueryString();
 

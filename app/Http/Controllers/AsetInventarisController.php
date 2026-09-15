@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AsetInventaris;
+use App\Models\MaintenanceLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -92,6 +93,19 @@ class AsetInventarisController extends Controller
         ]));
 
         return redirect()->route('aset-inventaris.show', $aset->id)->with('success', 'Catatan maintenance berhasil ditambahkan.');
+    }
+
+    public function updateMaintenanceStatus(Request $request, $id)
+    {
+        $maintenanceLog = MaintenanceLog::findOrFail($id);
+        $validated = $request->validate([
+            'status' => ['required', 'in:Open,Dalam Penanganan,Selesai'],
+        ]);
+
+        $maintenanceLog->update($validated);
+
+        return redirect()->route('aset-inventaris.show', $maintenanceLog->aset_inventaris_id)
+            ->with('success', 'Status maintenance berhasil diperbarui.');
     }
 
     private function validatedAsset(Request $request): array

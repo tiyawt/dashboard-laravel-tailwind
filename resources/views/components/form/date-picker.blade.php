@@ -8,7 +8,15 @@
 'value' => null,
 'required' => false,
 'dateFormat' => 'Y-m-d',
+'altFormat' => 'd/m/Y',
 ])
+
+@php
+$displayValue = $value;
+if ($altFormat && $value) {
+$displayValue = \Carbon\Carbon::parse($value)->format('d/m/Y');
+}
+@endphp
 
 <div x-data="{
     flatpickrInstance: null,
@@ -19,6 +27,8 @@
                 static: true,
                 monthSelectorType: 'static',
                 dateFormat: '{{ $dateFormat }}',
+                altInput: {{ $altFormat ? 'true' : 'false' }},
+                altFormat: '{{ $altFormat ?: $dateFormat }}',
                 defaultDate: @js($defaultDate ?: $value),
                 onChange: (selectedDates, dateStr, instance) => {
                     this.$dispatch('date-change', {
@@ -49,7 +59,7 @@
             type="text"
             id="{{ $id }}"
             name="{{ $name }}"
-            value="{{ $value }}"
+            value="{{ $displayValue }}"
             placeholder="{{ $placeholder }}"
             @if($required) required @endif
             oninvalid="this.setCustomValidity('Tanggal wajib diisi.')"

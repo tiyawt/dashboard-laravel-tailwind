@@ -87,6 +87,7 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::put('/aset-inventaris/{id}', [AsetInventarisController::class, 'update'])->name('aset-inventaris.update');
     Route::get('/aset-inventaris/{id}', [AsetInventarisController::class, 'show'])->name('aset-inventaris.show');
     Route::post('/aset-inventaris/{id}/maintenance', [AsetInventarisController::class, 'storeMaintenance'])->name('aset-inventaris.maintenance.store');
+    Route::patch('/maintenance/{id}/status', [AsetInventarisController::class, 'updateMaintenanceStatus'])->name('aset-inventaris.maintenance.status');
 
     // Profile Pages
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

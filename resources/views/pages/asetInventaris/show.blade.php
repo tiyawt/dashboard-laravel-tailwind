@@ -45,7 +45,21 @@
                             <td class="px-4 py-3 text-sm" x-text="log.penyebab || '-' "></td>
                             <td class="px-4 py-3 text-sm" x-text="log.tindakan_penanganan || '-' "></td>
                             <td class="px-4 py-3 text-sm" x-text="log.teknisi || '-' "></td>
-                            <td class="px-4 py-3 text-sm"><span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600" x-text="log.status"></span></td>
+                            <td class="px-4 py-3 text-sm">
+                                <form :action="`{{ url('/maintenance') }}/${log.id}/status`" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <select name="status" onchange="this.form.submit()" :class="{
+                                        'text-green-600 bg-green-50 dark:bg-green-500/15': log.status === 'Selesai',
+                                        'text-yellow-600 bg-yellow-50 dark:bg-yellow-500/15': log.status === 'Dalam Penanganan',
+                                        'text-blue-600 bg-blue-50 dark:bg-blue-500/15': log.status === 'Open'
+                                    }" class="rounded-full border border-gray-300 px-2 py-1 text-xs font-semibold focus:outline-none dark:border-gray-700">
+                                        <option value="Open" :selected="log.status === 'Open'">Open</option>
+                                        <option value="Dalam Penanganan" :selected="log.status === 'Dalam Penanganan'">Dalam Penanganan</option>
+                                        <option value="Selesai" :selected="log.status === 'Selesai'">Selesai</option>
+                                    </select>
+                                </form>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
@@ -68,7 +82,12 @@
             </div>
             <form action="{{ route('aset-inventaris.maintenance.store', $aset->id) }}" method="POST" class="grid gap-4 p-5 md:grid-cols-2">
                 @csrf
-                @foreach([['tanggal','Tanggal','date'],['pelapor','Pelapor','text'],['teknisi','Teknisi','text']] as [$name,$label,$type])
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal</label>
+                    <x-form.date-picker name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" dateFormat="Y-m-d" altFormat="d/m/Y" required />
+                    @error('tanggal')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                @foreach([['pelapor','Pelapor','text'],['teknisi','Teknisi','text']] as [$name,$label,$type])
                 <div>
                     <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $label }}</label>
                     <input name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $name === 'tanggal' ? date('Y-m-d') : '') }}" required class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white">
