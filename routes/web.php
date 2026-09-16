@@ -8,6 +8,7 @@ use App\Http\Controllers\PenerimaanBarangController;
 use App\Http\Controllers\DaftarBelanjaController;
 use App\Http\Controllers\BarangKeluarController;
 use App\Http\Controllers\AsetInventarisController;
+use App\Http\Controllers\MasterLokasiController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AuthenticatedSessionController;
 
@@ -43,6 +44,8 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::get('/penerimaan-barang/export', [PenerimaanBarangController::class, 'exportCsv'])->name('penerimaan-barang.export');
     Route::get('/daftar-belanja/export', [DaftarBelanjaController::class, 'exportCsv'])->name('daftar-belanja.export');
     Route::get('/stok-minimal/export', [MinimalStockController::class, 'exportCsv'])->name('stok-minimal.export');
+    Route::get('/aset-inventaris/export', [AsetInventarisController::class, 'exportXlsx'])->name('aset-inventaris.export');
+    Route::get('/master-lokasi/export', [MasterLokasiController::class, 'exportXlsx'])->name('master-lokasi.export');
 
     // Route Pengajuan Barang
     Route::get('/pengajuan-barang', [PengajuanBarangController::class, 'index'])->name('pengajuan.index');
@@ -85,9 +88,17 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::post('/aset-inventaris', [AsetInventarisController::class, 'store'])->name('aset-inventaris.store');
     Route::get('/aset-inventaris/{id}/edit', [AsetInventarisController::class, 'edit'])->name('aset-inventaris.edit');
     Route::put('/aset-inventaris/{id}', [AsetInventarisController::class, 'update'])->name('aset-inventaris.update');
+    Route::get('/aset-inventaris/{id}/history-pdf', [AsetInventarisController::class, 'historyPdf'])->name('aset-inventaris.history-pdf');
     Route::get('/aset-inventaris/{id}', [AsetInventarisController::class, 'show'])->name('aset-inventaris.show');
     Route::post('/aset-inventaris/{id}/maintenance', [AsetInventarisController::class, 'storeMaintenance'])->name('aset-inventaris.maintenance.store');
     Route::patch('/maintenance/{id}/status', [AsetInventarisController::class, 'updateMaintenanceStatus'])->name('aset-inventaris.maintenance.status');
+
+    // Master Lokasi
+    Route::get('/master-lokasi', [MasterLokasiController::class, 'index'])->name('master-lokasi.index');
+    Route::get('/master-lokasi/create', [MasterLokasiController::class, 'create'])->name('master-lokasi.create');
+    Route::post('/master-lokasi', [MasterLokasiController::class, 'store'])->name('master-lokasi.store');
+    Route::get('/master-lokasi/{id}/edit', [MasterLokasiController::class, 'edit'])->name('master-lokasi.edit');
+    Route::put('/master-lokasi/{id}', [MasterLokasiController::class, 'update'])->name('master-lokasi.update');
 
     // Profile Pages
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

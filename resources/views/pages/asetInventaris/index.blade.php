@@ -17,15 +17,20 @@
     <div class="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Daftar Aset & Inventaris</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Cari nomor inventaris untuk melihat detail dan histori pemeliharaan.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 mb-2">Cari nomor inventaris untuk melihat detail dan histori pemeliharaan.</p>
+            <a href="{{ route('aset-inventaris.export') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 h-[42px] py-2.5 text-sm font-medium text-white hover:bg-green-700">Download Excel</a>
+
         </div>
-        <a href="{{ route('aset-inventaris.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Aset</a>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('aset-inventaris.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Aset</a>
+        </div>
     </div>
 
     <div class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
         <form action="{{ route('aset-inventaris.index') }}" method="GET" class="flex min-w-0 flex-1 gap-2">
             <div class="relative min-w-0 flex-1">
                 <input x-ref="searchInput" type="text" name="search" value="{{ request('search') }}" placeholder="Cari nomor, nama, lokasi, atau user..." class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 pe-11 text-sm text-gray-800 shadow-theme-xs focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white/90" />
+
                 <button
                     type="button"
                     @click="openScanner()"
@@ -49,7 +54,7 @@
                     <th class="w-12 px-4 py-3 text-start">
                         <input type="checkbox" @change="toggleAll($event.target.checked)" :checked="allSelected" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" aria-label="Pilih semua aset di halaman ini">
                     </th>
-                    @foreach(['No. Inventaris','Nama Barang','Spesifikasi','Lantai','Lokasi','User','Keterangan','Aksi'] as $heading)
+                    @foreach(['No. Inventaris','Nama Barang','Spesifikasi','Lantai','Lokasi','User','Keterangan','Status','Aksi'] as $heading)
                     <th class="px-4 py-3 text-start text-sm font-semibold text-gray-500">{{ $heading }}</th>
                     @endforeach
                 </tr>
@@ -68,6 +73,9 @@
                     <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{{ $item->user ?: '-' }}</td>
                     <td class="max-w-[180px] truncate px-4 py-4 text-sm text-gray-600 dark:text-gray-400">{{ $item->keterangan ?: '-' }}</td>
                     <td class="px-4 py-4 text-sm">
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium {{ $item->status === 'Aktif' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' }}">{{ $item->status }}</span>
+                    </td>
+                    <td class="px-4 py-4 text-sm">
                         <div class="flex items-center gap-2">
                             <a href="{{ route('aset-inventaris.show', $item->id) }}" class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-800" title="Detail"><span aria-hidden="true">&#128065;</span><span>Detail</span></a>
                             <a href="{{ route('aset-inventaris.edit', $item->id) }}" class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-800" title="Edit"><span aria-hidden="true">&#9998;</span><span>Edit</span></a>
@@ -76,7 +84,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data aset inventaris.</td>
+                    <td colspan="10" class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400">Belum ada data aset inventaris.</td>
                 </tr>
                 @endforelse
             </tbody>

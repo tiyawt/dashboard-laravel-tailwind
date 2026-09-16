@@ -22,9 +22,44 @@
                 <dd class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">{{ $field === 'tanggal_entry' ? $aset->$field?->translatedFormat('j F Y') : ($field === 'jumlah' ? $aset->$field . ' Unit' : ($aset->$field ?: '-')) }}</dd>
             </div>@endforeach</dl>
     </section>
+
     <section class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="mb-5 flex items-center justify-between gap-3">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">B. Histori Pemeliharaan (Maintenance Log)</h3><button type="button" @click="maintenanceModalOpen = true" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Catatan Maintenance</button>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">B. Histori Aset</h3>
+                <p class="mt-1 text-sm text-gray-500">Perjalanan status dan lokasi aset tetap tersimpan tanpa mengubah No. Inventaris.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $aset->status === 'Aktif' ? 'bg-green-50 text-green-600 dark:bg-green-500/15' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' }}">{{ $aset->status }}</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-[650px] w-full text-start">
+                <thead>
+                    <tr class="border-y border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-800/50">
+                        <th class="px-4 py-3 text-start text-sm font-semibold text-gray-500">Tanggal</th>
+                        <th class="px-4 py-3 text-start text-sm font-semibold text-gray-500">Jenis</th>
+                        <th class="px-4 py-3 text-start text-sm font-semibold text-gray-500">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">@forelse($histories as $history)<tr>
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $history->tanggal?->translatedFormat('j F Y') ?: '-' }}</td>
+                        <td class="px-4 py-3 text-sm font-medium text-gray-800 dark:text-white/90">{{ $history->jenis }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $history->keterangan }}</td>
+                    </tr>@empty<tr>
+                        <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">Belum ada histori aset.</td>
+                    </tr>@endforelse</tbody>
+            </table>
+        </div>
+        @if($histories->hasPages())
+        <div class="mt-4 border-t border-gray-200 pt-4 dark:border-gray-800">{{ $histories->links() }}</div>
+        @endif
+    </section>
+
+    <section class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="mb-5 flex items-center justify-between gap-3">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">C. Histori Pemeliharaan (Maintenance Log)</h3>
+            <button type="button" @click="maintenanceModalOpen = true" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Catatan Maintenance</button>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-[950px] w-full text-start">
@@ -71,6 +106,7 @@
             <button type="button" @click="maintenancePage = Math.min(maintenancePageCount, maintenancePage + 1)" :disabled="maintenancePage === maintenancePageCount" class="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-gray-700 dark:text-gray-300">Berikutnya</button>
         </div>
     </section>
+
     <div x-show="maintenanceModalOpen" x-cloak class="fixed inset-0 z-[999999] flex h-full items-start justify-center overflow-y-auto overscroll-contain bg-gray-900/60 p-4 sm:items-center" @keydown.escape.window="maintenanceModalOpen = false">
         <div class="my-2 w-full max-w-xl rounded-2xl bg-white shadow-xl sm:my-4 dark:bg-gray-900" @click.outside="maintenanceModalOpen = false">
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
@@ -115,6 +151,14 @@
                 </div>
             </form>
         </div>
+    </div>
+    <div class="mt-4 flex justify-end">
+        <a href="{{ route('aset-inventaris.history-pdf', $aset->id) }}"
+            target="_blank"
+            rel="noopener"
+            class="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700">
+            Download Laporan Histori Aset (PDF)
+        </a>
     </div>
 </div>
 @endsection

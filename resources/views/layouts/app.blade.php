@@ -22,6 +22,9 @@
     request()->routeIs('barang-keluar.create') => 'Catat Barang Keluar',
     request()->routeIs('barang-keluar.edit') => 'Edit Catatan Barang Keluar',
     request()->routeIs('aset-inventaris.*') => 'Aset & Inventaris',
+    request()->routeIs('master-lokasi.index') => 'Master Lokasi',
+    request()->routeIs('master-lokasi.create') => 'Tambah Master Lokasi',
+    request()->routeIs('master-lokasi.edit') => 'Edit Master Lokasi',
     request()->routeIs('profile.index') => 'User Profile',
     default => 'Dashboard',
     };
@@ -138,11 +141,8 @@
         });
     </script>
 
-    <!-- Apply RTL and dark mode immediately to prevent flash -->
-    <!-- Apply dark mode immediately (RTL Script Diperbaiki) -->
     <script>
         (function() {
-            // Paksa selalu LTR
             document.documentElement.setAttribute('dir', 'ltr');
 
             const savedTheme = localStorage.getItem('theme');

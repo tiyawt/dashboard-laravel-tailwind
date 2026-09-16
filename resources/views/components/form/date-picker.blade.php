@@ -14,7 +14,7 @@
 @php
 $displayValue = $value;
 if ($altFormat && $value) {
-$displayValue = \Carbon\Carbon::parse($value)->format('d/m/Y');
+$displayValue = \Carbon\Carbon::parse($value)->format($altFormat);
 }
 @endphp
 
