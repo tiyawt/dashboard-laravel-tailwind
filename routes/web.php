@@ -76,9 +76,6 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::get('/barang-keluar', [BarangKeluarController::class, 'index'])->name('barang-keluar.index');
     Route::get('/barang-keluar/create', [BarangKeluarController::class, 'create'])->name('barang-keluar.create');
     Route::post('/barang-keluar', [BarangKeluarController::class, 'store'])->name('barang-keluar.store');
-    Route::get('/barang-keluar/{id}/edit', [BarangKeluarController::class, 'edit'])->name('barang-keluar.edit');
-    Route::put('/barang-keluar/{id}', [BarangKeluarController::class, 'update'])->name('barang-keluar.update');
-    Route::delete('/barang-keluar/{id}', [BarangKeluarController::class, 'destroy'])->name('barang-keluar.destroy');
 
     // Route Aset & Inventaris
     Route::get('/aset-inventaris', [AsetInventarisController::class, 'index'])->name('aset-inventaris.index');

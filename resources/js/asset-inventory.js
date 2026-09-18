@@ -36,6 +36,7 @@ function assetInventoryPage(items, config) {
         baseUrl: config.baseUrl,
         selected: null,
         detailOpen: false,
+        maintenanceModalOpen: false,
         maintenancePage: 1,
         maintenancePerPage: 10,
         scannerOpen: false,

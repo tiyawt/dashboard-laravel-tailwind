@@ -14,6 +14,7 @@
             baseUrl: @js(url('/aset-inventaris'))
         }
     )" class="w-full rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+
     <div class="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Daftar Aset & Inventaris</h3>
@@ -160,7 +161,7 @@
                 <div>
                     <p class="text-xs font-medium uppercase tracking-wide text-blue-600">Detail Aset</p>
                     <h3 class="mt-1 text-xl font-semibold text-gray-800 dark:text-white" x-text="selected?.nama_barang"></h3>
-                    <p class="text-sm text-gray-500" x-text="selected?.no_inventaris"></p>
+
                 </div><button type="button" @click="detailOpen = false" class="text-2xl text-gray-400" aria-label="Tutup">&times;</button>
             </div>
             <div class="grid gap-5 p-5 md:grid-cols-2">
@@ -177,7 +178,14 @@
                 </section>
                 <section class="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
                     <div class="mb-4 flex items-center justify-between gap-3">
-                        <h4 class="font-semibold text-gray-800 dark:text-white">Histori Pemeliharaan</h4><a :href="selected ? maintenanceUrl(selected.id) : '#'" class="whitespace-nowrap rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700">+ Tambah Catatan</a>
+                        <h4 class="font-semibold text-gray-800 dark:text-white">Histori Pemeliharaan</h4>
+                        <button
+                            type="button"
+                            @click="selected && (maintenanceModalOpen = true)"
+                            :disabled="!selected"
+                            class="whitespace-nowrap rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+                            + Tambah Catatan
+                        </button>
                     </div>
                     <div class="max-h-80 space-y-3 overflow-y-auto overscroll-contain">
                         <template x-if="!selected?.maintenance_logs?.length">
@@ -199,6 +207,55 @@
                 </section>
             </div>
             <div class="flex justify-end border-t border-gray-200 px-5 py-4 dark:border-gray-800"><a :href="selected ? detailUrl(selected.id) : '#'" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">Buka Halaman Detail</a></div>
+        </div>
+    </div>
+
+    <div x-show="maintenanceModalOpen" x-cloak class="fixed inset-0 z-[999999] flex h-full items-start justify-center overflow-y-auto overscroll-contain bg-gray-900/60 p-4 sm:items-center" @keydown.escape.window="maintenanceModalOpen = false">
+        <div class="my-2 w-full max-w-xl rounded-2xl bg-white shadow-xl sm:my-4 dark:bg-gray-900" @click.outside="maintenanceModalOpen = false">
+            <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">+ Tambah Catatan</h3>
+                    <p class="mt-1 text-sm text-gray-500" x-text="selected ? selected.no_inventaris : '-'"></p>
+                </div>
+                <button type="button" @click="maintenanceModalOpen = false" class="text-2xl leading-none text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Tutup">&times;</button>
+            </div>
+            <form :action="selected
+        ? `${baseUrl}/${selected.id}/maintenance`
+        : '#'"
+                method="POST" class="grid gap-4 p-5 md:grid-cols-2">
+                @csrf
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Tanggal</label>
+                    <x-form.date-picker name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" dateFormat="Y-m-d" altFormat="d/m/Y" required />
+                    @error('tanggal')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                @foreach([['pelapor','Pelapor','text'],['teknisi','Teknisi','text']] as [$name,$label,$type])
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $label }}</label>
+                    <input name="{{ $name }}" type="{{ $type }}" value="{{ old($name, $name === 'tanggal' ? date('Y-m-d') : '') }}" required class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                    @error($name)<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                @endforeach
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                    <select name="status" class="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white">
+                        <option {{ old('status') === 'Open' ? 'selected' : '' }}>Open</option>
+                        <option {{ old('status') === 'Dalam Penanganan' ? 'selected' : '' }}>Dalam Penanganan</option>
+                        <option {{ old('status') === 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                    </select>
+                </div>
+                @foreach([['gejala_masalah','Gejala / Masalah'],['penyebab','Penyebab'],['tindakan_penanganan','Tindakan / Penanganan']] as [$name,$label])
+                <div class="md:col-span-2">
+                    <label class="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">{{ $label }}</label>
+                    <textarea name="{{ $name }}" rows="2" {{ $name === 'gejala_masalah' ? 'required' : '' }} class="w-full rounded-lg border border-gray-300 bg-transparent p-3 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-white">{{ old($name) }}</textarea>
+                    @error($name)<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                </div>
+                @endforeach
+                <div class="md:col-span-2 flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-800">
+                    <button type="button" @click="maintenanceModalOpen = false" class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 dark:border-gray-700 dark:text-gray-300">Batal</button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700">Simpan Catatan</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

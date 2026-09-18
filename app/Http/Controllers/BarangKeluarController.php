@@ -88,92 +88,92 @@ class BarangKeluarController extends Controller
         return redirect()->route('barang-keluar.index')->with('success', 'Catatan barang keluar berhasil ditambahkan!');
     }
 
-    public function edit($id)
-    {
-        $barangKeluar = StokKeluarLemari::findOrFail($id);
+    // public function edit($id)
+    // {
+    //     $barangKeluar = StokKeluarLemari::findOrFail($id);
 
-        if (Auth::user()?->role === 'admin' && strtolower($barangKeluar->status) === 'done') {
-            return redirect()->route('barang-keluar.index')->withErrors([
-                'error' => 'Catatan barang keluar yang sudah DONE hanya dapat dikelola oleh superadmin.',
-            ]);
-        }
+    //     if (Auth::user()?->role === 'admin' && strtolower($barangKeluar->status) === 'done') {
+    //         return redirect()->route('barang-keluar.index')->withErrors([
+    //             'error' => 'Catatan barang keluar yang sudah DONE hanya dapat dikelola oleh superadmin.',
+    //         ]);
+    //     }
 
-        $masterBarang = MasterBarang::all();
+    //     $masterBarang = MasterBarang::all();
 
-        return view('pages.barangKeluar.form', compact('barangKeluar', 'masterBarang'));
-    }
+    //     return view('pages.barangKeluar.form', compact('barangKeluar', 'masterBarang'));
+    // }
 
-    public function update(Request $request, $id)
-    {
-        $isAdmin = Auth::user()?->role === 'admin';
-        $barangKeluar = StokKeluarLemari::findOrFail($id);
+    // public function update(Request $request, $id)
+    // {
+    //     $isAdmin = Auth::user()?->role === 'admin';
+    //     $barangKeluar = StokKeluarLemari::findOrFail($id);
 
-        if ($isAdmin && strtolower($barangKeluar->status) === 'done') {
-            return redirect()->route('barang-keluar.index')->withErrors([
-                'error' => 'Catatan barang keluar yang sudah DONE hanya dapat dikelola oleh superadmin.',
-            ]);
-        }
+    //     if ($isAdmin && strtolower($barangKeluar->status) === 'done') {
+    //         return redirect()->route('barang-keluar.index')->withErrors([
+    //             'error' => 'Catatan barang keluar yang sudah DONE hanya dapat dikelola oleh superadmin.',
+    //         ]);
+    //     }
 
-        $validated = $request->validate([
-            'barang_id'           => 'required|exists:master_barang,id',
-            'kondisi_barang_lama' => 'nullable|string',
-            'tanggal_keluar'      => 'required|date',
-            'jumlah'              => 'required|numeric|min:1',
-            'pelapor'             => 'required|string',
-            'lokasi'              => 'required|string',
-            'status'              => $isAdmin
-                ? 'nullable|in:done,not_yet'
-                : 'required|in:done,not_yet',
-            'keterangan'          => 'nullable|string',
-        ]);
+    //     $validated = $request->validate([
+    //         'barang_id'           => 'required|exists:master_barang,id',
+    //         'kondisi_barang_lama' => 'nullable|string',
+    //         'tanggal_keluar'      => 'required|date',
+    //         'jumlah'              => 'required|numeric|min:1',
+    //         'pelapor'             => 'required|string',
+    //         'lokasi'              => 'required|string',
+    //         'status'              => $isAdmin
+    //             ? 'nullable|in:done,not_yet'
+    //             : 'required|in:done,not_yet',
+    //         'keterangan'          => 'nullable|string',
+    //     ]);
 
-        $barang       = MasterBarang::findOrFail($request->barang_id);
+    //     $barang       = MasterBarang::findOrFail($request->barang_id);
 
-        // Hitung stok tersedia (kembalikan stok lama jika transaksi sebelumnya sudah DONE)
-        $stokTersedia = (int) $barang->jumlah_stock +
-            (strtolower($barangKeluar->status) === 'done' && $barangKeluar->barang_id == $barang->id
-                ? (int) $barangKeluar->jumlah
-                : 0);
+    //     // Hitung stok tersedia (kembalikan stok lama jika transaksi sebelumnya sudah DONE)
+    //     $stokTersedia = (int) $barang->jumlah_stock +
+    //         (strtolower($barangKeluar->status) === 'done' && $barangKeluar->barang_id == $barang->id
+    //             ? (int) $barangKeluar->jumlah
+    //             : 0);
 
-        $jumlahMinta = (int) $request->jumlah;
+    //     $jumlahMinta = (int) $request->jumlah;
 
-        // VALIDASI BERLAKU UNTUK SEMUA STATUS
-        if ($stokTersedia <= 0) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['jumlah' => "Stok untuk barang '{$barang->nama_barang}' tidak mencukupi (0)!"]);
-        }
+    //     // VALIDASI BERLAKU UNTUK SEMUA STATUS
+    //     if ($stokTersedia <= 0) {
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->withErrors(['jumlah' => "Stok untuk barang '{$barang->nama_barang}' tidak mencukupi (0)!"]);
+    //     }
 
-        if ($jumlahMinta > $stokTersedia) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['jumlah' => "Stok tidak cukup! Stok tersedia hanya {$stokTersedia} {$barang->satuan}, tetapi Anda memasukkan {$jumlahMinta}."]);
-        }
+    //     if ($jumlahMinta > $stokTersedia) {
+    //         return redirect()->back()
+    //             ->withInput()
+    //             ->withErrors(['jumlah' => "Stok tidak cukup! Stok tersedia hanya {$stokTersedia} {$barang->satuan}, tetapi Anda memasukkan {$jumlahMinta}."]);
+    //     }
 
-        if ($isAdmin) {
-            $validated['status'] = 'not_yet';
-        }
+    //     if ($isAdmin) {
+    //         $validated['status'] = 'not_yet';
+    //     }
 
-        $barangKeluar->update($validated);
+    //     $barangKeluar->update($validated);
 
-        return redirect()->route('barang-keluar.index')->with('success', 'Data barang keluar berhasil diperbarui!');
-    }
+    //     return redirect()->route('barang-keluar.index')->with('success', 'Data barang keluar berhasil diperbarui!');
+    // }
 
-    public function destroy($id)
-    {
-        $barangKeluar = StokKeluarLemari::findOrFail($id);
+    // public function destroy($id)
+    // {
+    //     $barangKeluar = StokKeluarLemari::findOrFail($id);
 
-        // Kunci penghapusan jika transaksi sudah selesai / DONE
-        if (strtolower($barangKeluar->status) === 'done') {
-            return redirect()->back()->withErrors([
-                'error' => 'Transaksi barang keluar yang sudah bernilai DONE tidak dapat dihapus agar stok fisik tetap konsisten!'
-            ]);
-        }
+    //     // Kunci penghapusan jika transaksi sudah selesai / DONE
+    //     if (strtolower($barangKeluar->status) === 'done') {
+    //         return redirect()->back()->withErrors([
+    //             'error' => 'Transaksi barang keluar yang sudah bernilai DONE tidak dapat dihapus agar stok fisik tetap konsisten!'
+    //         ]);
+    //     }
 
-        $barangKeluar->delete();
+    //     $barangKeluar->delete();
 
-        return redirect()->route('barang-keluar.index')->with('success', 'Data barang keluar (draft) berhasil dihapus!');
-    }
+    //     return redirect()->route('barang-keluar.index')->with('success', 'Data barang keluar (draft) berhasil dihapus!');
+    // }
 
     // Export 
     public function export(Request $request)

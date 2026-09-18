@@ -199,6 +199,8 @@ class AsetInventarisController extends Controller
             'lokasiMaster',
         ])->findOrFail($id);
 
+        
+
         $histories = $aset->histories()
             ->orderByDesc('tanggal')
             ->orderByDesc('id')

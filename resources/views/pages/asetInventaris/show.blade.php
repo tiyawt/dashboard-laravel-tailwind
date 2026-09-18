@@ -59,7 +59,7 @@
     <section class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="mb-5 flex items-center justify-between gap-3">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white">C. Histori Pemeliharaan (Maintenance Log)</h3>
-            <button type="button" @click="maintenanceModalOpen = true" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Catatan Maintenance</button>
+            <button type="button" @click="maintenanceModalOpen = true" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Catatan</button>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-[950px] w-full text-start">
@@ -111,7 +111,7 @@
         <div class="my-2 w-full max-w-xl rounded-2xl bg-white shadow-xl sm:my-4 dark:bg-gray-900" @click.outside="maintenanceModalOpen = false">
             <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Tambah Catatan Maintenance</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">+ Tambah Catatan</h3>
                     <p class="mt-1 text-sm text-gray-500">{{ $aset->no_inventaris }}</p>
                 </div>
                 <button type="button" @click="maintenanceModalOpen = false" class="text-2xl leading-none text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" aria-label="Tutup">&times;</button>

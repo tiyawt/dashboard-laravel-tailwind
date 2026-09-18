@@ -115,7 +115,6 @@
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Lokasi</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Status</th>
                     <th class="px-4 py-3 font-medium text-gray-500 text-sm">Keterangan</th>
-                    <th class="px-4 py-3 text-center font-medium text-gray-500 text-sm">Aksi</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -127,8 +126,8 @@
                     <td class="px-4 py-3.5 text-sm font-medium text-gray-800 dark:text-white/90">
                         {{ $item->barang->nama_barang ?? '-' }}
                     </td>
-                    <td class="px-4 py-3.5 text-sm font-semibold text-red-500">
-                        -{{ $item->jumlah }} {{ $item->barang->satuan ?? '' }}
+                    <td class="px-4 py-3.5 text-sm font-semibold text-gray-800 dark:text-white/90">
+                        {{ $item->jumlah }} {{ $item->barang->satuan ?? '' }}
                     </td>
                     <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-gray-400">
                         {{ $item->kondisi_barang_lama ?? '-' }}
@@ -153,33 +152,7 @@
                     <td class="px-4 py-3.5 text-sm text-gray-600 dark:text-gray-400">
                         {{ $item->keterangan ?? '-' }}
                     </td>
-                    <td class="px-4 py-3.5 text-sm text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <!-- Tombol Edit tetap tampil -->
-                            <a href="{{ route('barang-keluar.edit', $item->id) }}" class="p-1.5 text-gray-500 hover:text-blue-600" title="Edit Catatan">
-                                <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                                    <path d="M13.5858 3.58579C14.3668 2.80474 15.6332 2.80474 16.4142 3.58579C17.1953 4.36683 17.1953 5.63316 16.4142 6.41421L15.6213 7.20711L12.7929 4.37868L13.5858 3.58579Z" fill="currentColor" />
-                                    <path d="M11.3787 5.79289L3 14.1716V17H5.82843L14.2071 8.62132L11.3787 5.79289Z" fill="currentColor" />
-                                </svg>
-                            </a>
 
-                            <!-- Tombol Hapus hanya tampil jika status BUKAN 'done' -->
-                            @if(strtolower($item->status) !== 'done')
-                            <form action="{{ route('barang-keluar.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus draf barang keluar ini?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="p-1.5 text-gray-500 hover:text-red-600" title="Hapus Draf">
-                                    🗑️
-                                </button>
-                            </form>
-                            @else
-                            <!-- Indikator Terkunci -->
-                            <span class="p-1.5 text-gray-300 dark:text-gray-600 cursor-not-allowed" title="Transaksi DONE tidak dapat dihapus">
-                                🔒
-                            </span>
-                            @endif
-                        </div>
-                    </td>
                 </tr>
                 @empty
                 <tr>
