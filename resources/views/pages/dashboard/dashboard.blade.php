@@ -12,56 +12,56 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Master Barang</span>
+                    <span class="text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Master Barang</span>
                     <h4 class="mt-1 text-2xl font-bold text-gray-800 dark:text-white/90">{{ $totalMasterBarang }}</h4>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                 </div>
             </div>
-            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Total item barang terdaftar</p>
+            <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Total item barang terdaftar</p>
         </div>
 
         <!-- Pengajuan Menunggu (Pending) -->
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Pengajuan Pending</span>
+                    <span class="text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Pengajuan Pending</span>
                     <h4 class="mt-1 text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $pengajuanPending }}</h4>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 text-yellow-600 dark:bg-yellow-500/15 dark:text-orange-400">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
             </div>
-            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Butuh persetujuan disposisi</p>
+            <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Butuh persetujuan disposisi</p>
         </div>
 
         <!-- Stok Menipis -->
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Stok Menipis</span>
+                    <span class="text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Stok Menipis</span>
                     <h4 class="mt-1 text-2xl font-bold text-orange-500">{{ $stokMenipisCount }}</h4>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-500 dark:bg-orange-500/15">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 </div>
             </div>
-            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Mendekati batas minimal</p>
+            <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Mendekati batas minimal</p>
         </div>
 
         <!-- Stok Habis -->
         <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Stok Habis</span>
+                    <span class="text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Stok Habis</span>
                     <h4 class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">{{ $stokHabisCount }}</h4>
                 </div>
                 <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                 </div>
             </div>
-            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Harus segera diisi/diajukan</p>
+            <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Harus segera diisi/diajukan</p>
         </div>
 
     </div>
@@ -73,16 +73,16 @@
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div class="mb-4 flex items-center justify-between">
                 <div>
-                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Peringatan Stok Minimal</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Barang yang butuh restock segera</p>
+                    <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Peringatan Stock Minimal</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Barang yang butuh restock segera</p>
                 </div>
-                <a href="{{ route('stok-minimal.index') }}" class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">Lihat Semua →</a>
+                <a href="{{ route('stok-minimal.index') }}" class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">Lihat Semua →</a>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-gray-100 bg-gray-50/50 text-xs font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/30">
+                        <tr class="border-b border-gray-100 bg-gray-50/50 text-sm font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/30">
                             <th class="p-2.5">Nama Barang</th>
                             <th class="p-2.5">Stok Fisik</th>
                             <th class="p-2.5">Batas Minimal</th>
@@ -105,7 +105,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-xs text-gray-400">Semua stok barang dalam kondisi aman.</td>
+                            <td colspan="4" class="p-4 text-center text-sm text-gray-400">Semua stok barang dalam kondisi aman.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -118,15 +118,15 @@
             <div class="mb-4 flex items-center justify-between">
                 <div>
                     <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Pengajuan Barang Terbaru</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">Aktivitas pengajuan terkini</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Aktivitas pengajuan terkini</p>
                 </div>
-                <a href="{{ route('pengajuan.index') }}" class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">Lihat Semua →</a>
+                <a href="{{ route('pengajuan.index') }}" class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">Lihat Semua →</a>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="border-b border-gray-100 bg-gray-50/50 text-xs font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/30">
+                        <tr class="border-b border-gray-100 bg-gray-50/50 text-sm font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/30">
                             <th class="p-2.5">Barang</th>
                             <th class="p-2.5">Divisi</th>
                             <th class="p-2.5">Volume</th>
@@ -151,7 +151,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="p-4 text-center text-xs text-gray-400">Belum ada pengajuan barang.</td>
+                            <td colspan="4" class="p-4 text-center text-sm text-gray-400">Belum ada pengajuan barang.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -166,15 +166,15 @@
         <div class="mb-4 flex items-center justify-between">
             <div>
                 <h3 class="text-base font-semibold text-gray-800 dark:text-white/90">Riwayat Pengeluaran Stok Terkini</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Catatan barang keluar dari lemari</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Catatan barang keluar dari lemari</p>
             </div>
-            <a href="{{ route('barang-keluar.index') }}" class="text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">Lihat Semua →</a>
+            <a href="{{ route('barang-keluar.index') }}" class="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400">Lihat Semua →</a>
         </div>
 
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-gray-100 bg-gray-50/50 text-xs font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/30">
+                    <tr class="border-b border-gray-100 bg-gray-50/50 text-sm font-medium text-gray-500 dark:border-gray-800 dark:bg-gray-800/30">
                         <th class="p-2.5">Tanggal</th>
                         <th class="p-2.5">Nama Barang</th>
                         <th class="p-2.5">Jumlah Keluar</th>
@@ -193,7 +193,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="p-4 text-center text-xs text-gray-400">Belum ada aktivitas barang keluar.</td>
+                        <td colspan="5" class="p-4 text-center text-sm text-gray-400">Belum ada aktivitas barang keluar.</td>
                     </tr>
                     @endforelse
                 </tbody>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PenerimaanBarang;
 use App\Services\SimpleXlsxExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -166,77 +167,91 @@ class PenerimaanBarangController extends Controller
             );
     }
 
-    /**
-     * Export laporan penerimaan barang
-     */
-    public function exportCsv(Request $request)
+    public function export(Request $request)
     {
         $bulan = $request->input('bulan', date('m'));
         $tahun = $request->input('tahun', date('Y'));
+        $format = $request->input('format', 'pdf');
 
-        $data = PenerimaanBarang::with(['pengajuan.barang'])
-            ->whereMonth('tanggal_pengambilan', $bulan)
-            ->whereYear('tanggal_pengambilan', $tahun)
-            ->latest()
+        $totalPenerimaan = PenerimaanBarang::query()
+            ->select('pengajuan_barang_id')
+            ->selectRaw('SUM(jumlah_diterima) as total_diterima')
+            ->groupBy('pengajuan_barang_id');
+
+        $data = PenerimaanBarang::query()
+            ->select('penerimaan_barang.*')
+            ->join(
+                'pengajuan_barang',
+                'pengajuan_barang.id',
+                '=',
+                'penerimaan_barang.pengajuan_barang_id'
+            )
+            ->with(['pengajuan.barang'])
+            ->whereMonth('pengajuan_barang.tanggal_pengajuan', $bulan)
+            ->whereYear('pengajuan_barang.tanggal_pengajuan', $tahun)
+            ->orderByDesc('pengajuan_barang.tanggal_pengajuan')
+            ->orderByDesc('penerimaan_barang.id')
             ->get();
 
-        $fileName = "laporan_penerimaan_barang_{$tahun}_{$bulan}.xlsx";
-
-        $columns = [
-            'Nama Barang',
-            'Tgl Pengajuan',
-            'Status Kondisi',
-            'Divisi Permintaan',
-            'Total Pengajuan',
-            'Sudah Diterima',
-            'Sisa',
-            'Tgl Pengambilan',
-            'Jumlah Diterima',
-            'Penerima',
-            'Keterangan',
-        ];
-
-        $formatDate = static function ($date) {
-            return $date
-                ? \Carbon\Carbon::parse($date)->format('d/m/Y')
-                : '-';
-        };
-
-        $rows = $data->map(function ($item) use ($formatDate) {
-            $pengajuan = $item->pengajuan;
-
-            $totalPengajuan = $pengajuan?->volume ?? 0;
-
-            $sudahDiterima = PenerimaanBarang::where(
-                'pengajuan_barang_id',
-                $item->pengajuan_barang_id
-            )->sum('jumlah_diterima');
-
-            $sisa = max(
-                0,
-                $totalPengajuan - $sudahDiterima
+        // PDF
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView(
+                'pages.PenerimaanBarang.penerimaan-barang-pdf',
+                [
+                    'data' => $data,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]
             );
 
-            return [
-                $pengajuan?->barang?->nama_barang ?? '-',
-                $formatDate($pengajuan?->tanggal_pengajuan),
-                strtoupper($pengajuan?->status_barang ?? '-'),
-                $pengajuan?->permintaan ?? '-',
-                $totalPengajuan,
-                $sudahDiterima,
-                $sisa,
-                $formatDate($item->tanggal_pengambilan),
-                $item->jumlah_diterima,
-                $item->penerima ?? '-',
-                $item->keterangan ?? '-',
-            ];
-        })->all();
+            return $pdf->download(
+                "laporan_penerimaan_barang_{$tahun}_{$bulan}.pdf"
+            );
+        }
 
-        return SimpleXlsxExporter::download(
-            $columns,
-            $rows,
-            $fileName,
-            'Penerimaan Barang'
-        );
+        // Excel
+        if (in_array($format, ['excel', 'xlsx'], true)) {
+
+            $columns = [
+                'Nama Barang',
+                'Tgl Pengajuan',
+                'Status Barang',
+                'Divisi Permintaan',
+                'Total Pengajuan',
+                'Tgl Pengambilan',
+                'Jumlah Diterima',
+                'Penerima',
+                'Keterangan',
+            ];
+
+            $formatDate = static fn($date) =>
+            $date
+                ? \Carbon\Carbon::parse($date)->format('d/m/Y')
+                : '-';
+
+            $rows = $data->map(function ($item) use ($formatDate) {
+
+                $pengajuan = $item->pengajuan;
+
+                return [
+                    $pengajuan?->barang?->nama_barang ?? '-',
+                    $formatDate($pengajuan?->tanggal_pengajuan),
+                    strtoupper($pengajuan?->status_barang ?? '-'),
+                    $pengajuan?->permintaan ?? '-',
+                    $pengajuan?->volume ?? 0,
+                    $formatDate($item->tanggal_pengambilan),
+                    $item->jumlah_diterima ?? 0,
+                    $item->penerima ?? '-',
+                    $item->keterangan ?? '-',
+                ];
+            })->all();
+
+            return SimpleXlsxExporter::download(
+                $columns,
+                $rows,
+                "laporan_penerimaan_barang_{$tahun}_{$bulan}.xlsx",
+                'Penerimaan Barang'
+            );
+        }
     }
 }

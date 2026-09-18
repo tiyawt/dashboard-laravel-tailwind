@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AsetInventaris;
 use App\Models\MasterLokasi;
 use App\Services\SimpleXlsxExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -16,28 +17,16 @@ class MasterLokasiController extends Controller
         $this->authorizeManagement();
 
         return view('pages.masterLokasi.index', [
-            'locations' => MasterLokasi::orderBy('tipe')->orderBy('nama')->get(),
+            'locations' => MasterLokasi::orderByRaw("
+            CASE tipe
+                WHEN 'Gedung' THEN 1
+                WHEN 'Lantai' THEN 2
+                WHEN 'Lokasi' THEN 3
+            END
+        ")
+                ->orderBy('nama')
+                ->paginate(10),
         ]);
-    }
-
-    public function exportXlsx()
-    {
-        $this->authorizeManagement();
-
-        $locations = MasterLokasi::orderBy('tipe')->orderBy('nama')->get();
-        $columns = ['Nama Lokasi', 'Kode', 'Tipe'];
-        $rows = $locations->map(fn(MasterLokasi $location) => [
-            $location->nama,
-            $location->kode,
-            $location->tipe === 'Lokasi' ? 'Divisi' : $location->tipe,
-        ])->all();
-
-        return SimpleXlsxExporter::download(
-            $columns,
-            $rows,
-            'master_lokasi_' . date('Y-m-d') . '.xlsx',
-            'Master Lokasi'
-        );
     }
 
     public function create()
@@ -64,7 +53,9 @@ class MasterLokasiController extends Controller
 
         MasterLokasi::create($this->validated($request));
 
-        return back()->with('success', 'Master lokasi berhasil ditambahkan.');
+        return redirect()
+            ->route('master-lokasi.index')
+            ->with('success', 'Master lokasi berhasil ditambahkan.');
     }
 
     public function update(Request $request, $id)
@@ -154,5 +145,66 @@ class MasterLokasiController extends Controller
                 ),
             403
         );
+    }
+
+    public function export(Request $request)
+    {
+        $this->authorizeManagement();
+
+        $format = $request->input('format', 'pdf');
+        $bulan = $request->input('bulan', date('m'));
+        $tahun = $request->input('tahun', date('Y'));
+
+        $data = MasterLokasi::orderByRaw("
+        CASE tipe
+            WHEN 'Gedung' THEN 1
+            WHEN 'Lantai' THEN 2
+            WHEN 'Lokasi' THEN 3
+        END
+    ")
+            ->orderBy('nama')
+            ->get();
+
+        // =========================
+        // PDF
+        // =========================
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('pages.masterLokasi.master-lokasi-pdf', [
+                'data' => $data,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+            ])->setPaper('a4', 'portrait');
+
+            return $pdf->download(
+                'master_lokasi_' . date('Y-m-d') . '.pdf'
+            );
+        }
+
+        // =========================
+        // EXCEL
+        // =========================
+        if (in_array($format, ['excel', 'xlsx'], true)) {
+
+            $columns = [
+                'Nama Lokasi',
+                'Kode',
+                'Tipe',
+            ];
+
+            $rows = $data->map(fn(MasterLokasi $item) => [
+                $item->nama,
+                $item->kode,
+                $item->tipe === 'Lokasi'
+                    ? 'Divisi'
+                    : $item->tipe,
+            ])->all();
+
+            return SimpleXlsxExporter::download(
+                $columns,
+                $rows,
+                'master_lokasi_' . date('Y-m-d') . '.xlsx',
+                'Master Lokasi'
+            );
+        }
     }
 }

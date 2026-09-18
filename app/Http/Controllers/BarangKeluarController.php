@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StokKeluarLemari;
 use App\Models\MasterBarang;
 use App\Services\SimpleXlsxExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -174,35 +175,73 @@ class BarangKeluarController extends Controller
         return redirect()->route('barang-keluar.index')->with('success', 'Data barang keluar (draft) berhasil dihapus!');
     }
 
-    // Export CSV
-    public function exportCsv(Request $request)
+    // Export 
+    public function export(Request $request)
     {
-        // Ambil input bulan dan tahun dari request (default: bulan & tahun saat ini)
         $bulan = $request->input('bulan', date('m'));
         $tahun = $request->input('tahun', date('Y'));
+        $format = $request->input('format', 'pdf');
 
-        // Filter data barang keluar berdasarkan bulan dan tahun
         $data = StokKeluarLemari::with('barang')
             ->whereMonth('tanggal_keluar', $bulan)
             ->whereYear('tanggal_keluar', $tahun)
-            ->latest()
+            ->orderByDesc('tanggal_keluar')
+            ->orderByDesc('id')
             ->get();
 
-        $fileName = "laporan_barang_keluar_{$tahun}_{$bulan}.xlsx";
-        $columns = ['Tanggal Keluar', 'Nama Barang', 'Jumlah', 'Satuan', 'Pelapor', 'Lokasi', 'Status', 'Keterangan'];
-        $formatDate = static fn($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
+        // =========================
+        // EXPORT PDF
+        // =========================
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('pages.barangKeluar.barang-keluar-pdf', [
+                'data' => $data,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+            ]);
 
-        $rows = $data->map(fn($item) => [
-            $formatDate($item->tanggal_keluar),
-            $item->barang?->nama_barang ?? '-',
-            $item->jumlah,
-            $item->barang?->satuan ?? '',
-            $item->pelapor,
-            $item->lokasi,
-            strtoupper($item->status),
-            $item->keterangan ?? '-',
-        ])->all();
+            return $pdf->download(
+                "laporan_barang_keluar_{$tahun}_{$bulan}.pdf"
+            );
+        }
 
-        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Barang Keluar');
+        // =========================
+        // EXPORT EXCEL
+        // =========================
+        if (in_array($format, ['excel', 'xlsx'], true)) {
+
+            $columns = [
+                'Tanggal Keluar',
+                'Nama Barang',
+                'Jumlah',
+                'Satuan',
+                'Pelapor',
+                'Lokasi',
+                'Status',
+                'Keterangan',
+            ];
+
+            $formatDate = static fn($date) =>
+            $date
+                ? \Carbon\Carbon::parse($date)->format('d/m/Y')
+                : '-';
+
+            $rows = $data->map(fn($item) => [
+                $formatDate($item->tanggal_keluar),
+                $item->barang?->nama_barang ?? '-',
+                $item->jumlah,
+                $item->barang?->satuan ?? '',
+                $item->pelapor,
+                $item->lokasi,
+                strtoupper($item->status),
+                $item->keterangan ?? '-',
+            ])->all();
+
+            return SimpleXlsxExporter::download(
+                $columns,
+                $rows,
+                "laporan_barang_keluar_{$tahun}_{$bulan}.xlsx",
+                'Barang Keluar'
+            );
+        }
     }
 }

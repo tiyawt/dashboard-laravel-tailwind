@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PengajuanBarang;
 use App\Models\MasterBarang;
 use App\Services\SimpleXlsxExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -113,34 +114,77 @@ class PengajuanBarangController extends Controller
         return redirect()->back()->with('success', 'Pengajuan barang berhasil dihapus!');
     }
 
-    public function exportCsv(Request $request)
+    public function export(Request $request)
     {
         $bulan = $request->input('bulan', date('m'));
         $tahun = $request->input('tahun', date('Y'));
+        $format = $request->input('format', 'pdf');
 
         $data = PengajuanBarang::with('barang')
             ->whereMonth('tanggal_pengajuan', $bulan)
             ->whereYear('tanggal_pengajuan', $tahun)
-            ->latest()
+            ->orderByDesc('tanggal_pengajuan')
+            ->orderByDesc('id')
             ->get();
 
-        $fileName = "laporan_pengajuan_barang_{$tahun}_{$bulan}.xlsx";
-        $columns = ['Tanggal Pengajuan', 'Nama Barang', 'Volume', 'Harga/Unit', 'Total Harga', 'Permintaan (Divisi)', 'Status Barang', 'Status Disposisi', 'Link SPB/Invoice', 'Keterangan'];
-        $formatDate = static fn($date) => $date ? \Carbon\Carbon::parse($date)->format('d/m/Y') : '-';
+        // PDF
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView(
+                'pages.pengajuanBarang.pengajuan-barang-pdf',
+                [
+                    'data' => $data,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]
+            );
 
-        $rows = $data->map(fn($item) => [
-            $formatDate($item->tanggal_pengajuan),
-            $item->barang?->nama_barang ?? '-',
-            $item->volume,
-            $item->harga_per_unit,
-            $item->volume * $item->harga_per_unit,
-            $item->permintaan,
-            strtoupper($item->status_barang),
-            strtoupper($item->status_disposisi),
-            $item->link_spb_invoice ?? '-',
-            $item->keterangan ?? '-',
-        ])->all();
+            return $pdf->download(
+                "laporan_pengajuan_barang_{$tahun}_{$bulan}.pdf"
+            );
+        }
 
-        return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Pengajuan Barang');
+        // Excel
+        if (in_array($format, ['excel', 'xlsx'], true)) {
+
+            $columns = [
+                'Tanggal Pengajuan',
+                'Nama Barang',
+                'Volume',
+                'Harga/Unit',
+                'Total Harga',
+                'Permintaan (Divisi)',
+                'Status Barang',
+                'Status Disposisi',
+                'Link SPB/Invoice',
+                'Keterangan'
+            ];
+
+            $formatDate = static fn($date) =>
+            $date
+                ? \Carbon\Carbon::parse($date)->format('d/m/Y')
+                : '-';
+
+            
+
+            $rows = $data->map(fn($item) => [
+                $formatDate($item->tanggal_pengajuan),
+                $item->barang?->nama_barang ?? '-',
+                $item->volume,
+                $item->harga_per_unit,
+                $item->volume * $item->harga_per_unit,
+                $item->permintaan,
+                strtoupper($item->status_barang ?? '-'),
+                strtoupper($item->status_disposisi ?? '-'),
+                $item->link_spb_invoice ?? '-',
+                $item->keterangan ?? '-',
+            ])->all();
+
+            return SimpleXlsxExporter::download(
+                $columns,
+                $rows,
+                "laporan_pengajuan_barang_{$tahun}_{$bulan}.xlsx",
+                'Pengajuan Barang'
+            );
+        }
     }
 }

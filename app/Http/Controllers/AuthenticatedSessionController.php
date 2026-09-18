@@ -9,19 +9,17 @@ class AuthenticatedSessionController extends Controller
 {
     // Tampilkan Halaman Form signin
     public function showLoginForm()
-{
-    // Jika user SUDAH login, baru arahkan ke dashboard
-    if (Auth::check()) {
-        return redirect()->route(
-            Auth::user()->role === 'admin' ? 'barang-keluar.index' : 'dashboard'
-        );
+    {
+        // Jika user SUDAH login, baru arahkan ke dashboard
+        if (Auth::check()) {
+            return redirect()->route(
+                Auth::user()->role === 'admin' ? 'barang-keluar.index' : 'dashboard'
+            );
+        }
+
+        return view('pages.auth.signin');
     }
 
-    // Jika BELUM login, tampilkan halaman signin (JANGAN ada redirect lagi)
-    return view('pages.auth.signin');
-}
-
-    // Proses Verifikasi signin (Sign In)
     public function signin(Request $request)
     {
         $credentials = $request->validate([

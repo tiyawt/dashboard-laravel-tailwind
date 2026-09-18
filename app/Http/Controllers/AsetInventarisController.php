@@ -6,6 +6,7 @@ use App\Models\AsetInventaris;
 use App\Models\MasterLokasi;
 use App\Models\MaintenanceLog;
 use App\Services\SimpleXlsxExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -68,58 +69,72 @@ class AsetInventarisController extends Controller
         ], $aset ? 200 : 404);
     }
 
-    public function exportXlsx()
+    public function export(Request $request)
     {
         $this->authorizeManagement();
+        $bulan = $request->input('bulan', date('m'));
+        $tahun = $request->input('tahun', date('Y'));
 
-        $assets = AsetInventaris::with([
+        $format = $request->input('format', 'pdf');
+
+        $data = AsetInventaris::with([
             'gedung',
             'lantaiMaster',
             'lokasiMaster',
-        ])->latest('updated_at')->latest('id')->get();
+        ])
+            ->latest('updated_at')
+            ->latest('id')
+            ->get();
 
-        $columns = [
-            'No. Inventaris',
-            'Tahun Perolehan',
-            'Nama Barang',
-            'Spesifikasi',
-            'Gedung',
-            'Lantai',
-            'Divisi',
-            'User',
-            'Jumlah',
-            'Tanggal Entry',
-            'Status',
-            'Tanggal Nonaktif',
-            'Alasan Nonaktif',
-            'Kelengkapan',
-            'Keterangan',
-        ];
+        // =========================
+        // PDF
+        // =========================
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView('pages.asetInventaris.aset-inventaris-pdf', [
+                'data' => $data,
+                'bulan' => $bulan,
+                'tahun' => $tahun,
+            ])->setPaper('a4', 'landscape');
 
-        $rows = $assets->map(fn(AsetInventaris $asset) => [
-            $asset->no_inventaris,
-            $asset->tahun_perolehan ?? '-',
-            $asset->nama_barang,
-            $asset->spesifikasi ?? '-',
-            $asset->gedung?->nama ?? '-',
-            $asset->lantaiMaster?->nama ?? $asset->lantai ?? '-',
-            $asset->lokasiMaster?->nama ?? $asset->lokasi ?? '-',
-            $asset->user ?? '-',
-            $asset->jumlah,
-            $asset->tanggal_entry?->format('Y-m-d') ?? '-',
-            $asset->status ?? '-',
-            $asset->tanggal_nonaktif?->format('Y-m-d') ?? '-',
-            $asset->alasan_nonaktif ?? '-',
-            $asset->kelengkapan ?? '-',
-            $asset->keterangan ?? '-',
-        ])->all();
+            return $pdf->download(
+                'aset_inventaris_' . date('Y-m-d') . '.pdf'
+            );
+        }
 
-        return SimpleXlsxExporter::download(
-            $columns,
-            $rows,
-            'aset_inventaris_' . date('Y-m-d') . '.xlsx',
-            'Aset Inventaris'
-        );
+        // =========================
+        // EXCEL
+        // =========================
+        if (in_array($format, ['excel', 'xlsx'], true)) {
+
+            $columns = [
+                'No. Inventaris',
+                'Nama Barang',
+                'Spesifikasi',
+                'Lantai',
+                'Divisi',
+                'User',
+                'Status',
+                'Keterangan',
+            ];
+
+            $rows = $data->map(fn(AsetInventaris $asset) => [
+                $asset->no_inventaris,
+                $asset->nama_barang,
+                $asset->spesifikasi ?? '-',
+                $asset->lantaiMaster?->nama ?? $asset->lantai ?? '-',
+                $asset->lokasiMaster?->nama ?? $asset->lokasi ?? '-',
+                $asset->nama_user ?? '-',
+                $asset->keterangan ?? '-',
+                $asset->status ?? '-',
+            ])->all();
+
+            return SimpleXlsxExporter::download(
+                $columns,
+                $rows,
+                'aset_inventaris_' . date('Y-m-d') . '.xlsx',
+                'Aset Inventaris'
+            );
+        }
     }
 
     public function create()
@@ -620,7 +635,7 @@ class AsetInventarisController extends Controller
             'tahun_perolehan' => [
                 'required',
                 'integer',
-                'between:1900,2200',
+                'between:1988,2200',
             ],
 
             'gedung_id' => [

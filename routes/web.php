@@ -38,14 +38,13 @@ Route::middleware(['auth', 'prevent-back', 'admin-barang-keluar'])->group(functi
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
-    // Route Export (Ditaruh di atas route {id} agar tidak bentrok)
-    Route::get('/barang-keluar/export', [BarangKeluarController::class, 'exportCsv'])->name('barang-keluar.export');
-    Route::get('/pengajuan-barang/export', [PengajuanBarangController::class, 'exportCsv'])->name('pengajuan-barang.export');
-    Route::get('/penerimaan-barang/export', [PenerimaanBarangController::class, 'exportCsv'])->name('penerimaan-barang.export');
-    Route::get('/daftar-belanja/export', [DaftarBelanjaController::class, 'exportCsv'])->name('daftar-belanja.export');
-    Route::get('/stok-minimal/export', [MinimalStockController::class, 'exportCsv'])->name('stok-minimal.export');
-    Route::get('/aset-inventaris/export', [AsetInventarisController::class, 'exportXlsx'])->name('aset-inventaris.export');
-    Route::get('/master-lokasi/export', [MasterLokasiController::class, 'exportXlsx'])->name('master-lokasi.export');
+    Route::get('/barang-keluar/export', [BarangKeluarController::class, 'export'])->name('barang-keluar.export');
+    Route::get('/pengajuan-barang/export', [PengajuanBarangController::class, 'export'])->name('pengajuan-barang.export');
+    Route::get('/penerimaan-barang/export', [PenerimaanBarangController::class, 'export'])->name('penerimaan-barang.export');
+    Route::get('/daftar-belanja/export', [DaftarBelanjaController::class, 'export'])->name('daftar-belanja.export');
+    Route::get('/stok-minimal/export', [MinimalStockController::class, 'export'])->name('stok-minimal.export');
+    Route::get('/aset-inventaris/export', [AsetInventarisController::class, 'export'])->name('aset-inventaris.export');
+    Route::get('/master-lokasi/export', [MasterLokasiController::class, 'export'])->name('master-lokasi.export');
 
     // Route Pengajuan Barang
     Route::get('/pengajuan-barang', [PengajuanBarangController::class, 'index'])->name('pengajuan.index');

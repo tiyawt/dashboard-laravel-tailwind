@@ -33,7 +33,7 @@ class MenuHelper
                 'path' => '/penerimaan-barang',
             ],
             [
-                'name' => 'Batas Stok Minimal Barang',
+                'name' => 'Batas Stock Minimal Barang',
                 'icon' => 'batas-stok-minimal',
                 'path' => '/stok-minimal',
             ],
@@ -91,13 +91,17 @@ class MenuHelper
 
     private static function filterItemsForCurrentUser(array $items): array
     {
-        if (in_array(Auth::user()?->role, ['admin', 'superadmin'], true)) {
+        if (Auth::user()?->role === 'superadmin') {
             return $items;
         }
 
+        $allowedPaths = Auth::user()?->role === 'admin'
+            ? ['/barang-keluar', '/profile']
+            : ['/', '/aset-inventaris'];
+
         return array_values(array_filter(
             $items,
-            fn(array $item) => in_array($item['path'], ['/', '/aset-inventaris'], true)
+            fn(array $item) => in_array($item['path'], $allowedPaths, true)
         ));
     }
 

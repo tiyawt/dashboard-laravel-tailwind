@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MasterBarang;
 use App\Models\MinimalStock;
 use App\Services\SimpleXlsxExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -196,5 +197,129 @@ class MinimalStockController extends Controller
         ])->all();
 
         return SimpleXlsxExporter::download($columns, $rows, $fileName, 'Stok Minimal');
+    }
+
+    public function export(Request $request)
+    {
+        $bulan = $request->input('bulan', date('m'));
+        $tahun = $request->input('tahun', date('Y'));
+        $format = $request->input('format', 'pdf');
+
+        $totalDiterima = DB::table('penerimaan_barang')
+            ->join(
+                'pengajuan_barang',
+                'pengajuan_barang.id',
+                '=',
+                'penerimaan_barang.pengajuan_barang_id'
+            )
+            ->selectRaw('COALESCE(SUM(penerimaan_barang.jumlah_diterima), 0)')
+            ->whereColumn('pengajuan_barang.barang_id', 'master_barang.id')
+            ->where('pengajuan_barang.status_disposisi', 'acc');
+
+        $totalKeluar = DB::table('stok_keluar_lemari')
+            ->selectRaw('COALESCE(SUM(jumlah), 0)')
+            ->whereColumn('barang_id', 'master_barang.id')
+            ->where('status', 'done');
+
+        $stokSaatIni = "(COALESCE(({$totalDiterima->toSql()}), 0) 
+        - COALESCE(({$totalKeluar->toSql()}), 0))";
+
+        $data = MinimalStock::query()
+            ->select('minimal_stock.*')
+            ->join(
+                'master_barang',
+                'master_barang.id',
+                '=',
+                'minimal_stock.barang_id'
+            )
+            ->selectSub($totalDiterima, 'total_diterima_calc')
+            ->selectSub($totalKeluar, 'total_keluar_calc')
+            ->with('barang')
+            ->orderByRaw(
+                "CASE
+                WHEN {$stokSaatIni} <= 0 THEN 0
+                WHEN {$stokSaatIni} <= minimal_stock.minimal THEN 1
+                ELSE 2
+            END",
+                array_merge(
+                    $totalDiterima->getBindings(),
+                    $totalKeluar->getBindings(),
+                    $totalDiterima->getBindings(),
+                    $totalKeluar->getBindings()
+                )
+            )
+            ->orderBy('master_barang.nama_barang')
+            ->get();
+
+        // Status yang sama persis dengan tabel web
+        $data->each(function ($item) {
+
+            if ($item->total_diterima_calc - $item->total_keluar_calc <= 0) {
+                $item->statusAlert = 'HABIS';
+            } elseif (
+                ($item->total_diterima_calc - $item->total_keluar_calc)
+                <= $item->minimal
+            ) {
+                $item->statusAlert = 'MENIPIS';
+            } else {
+                $item->statusAlert = 'AMAN';
+            }
+
+            // Supaya nilai yang ditampilkan juga sama dengan stok saat ini
+            $item->jumlah_stock =
+                $item->total_diterima_calc - $item->total_keluar_calc;
+
+            $item->selisih =
+                $item->jumlah_stock - $item->minimal;
+        });
+
+        // PDF
+        if ($format === 'pdf') {
+            $pdf = Pdf::loadView(
+                'pages.stokMinimal.stok-minimal-pdf',
+                [
+                    'data' => $data,
+                    'bulan' => $bulan,
+                    'tahun' => $tahun,
+                ]
+            );
+
+            return $pdf->download(
+                'laporan_stock_minimal.pdf'
+            );
+        }
+
+        // Excel
+        if (in_array($format, ['excel', 'xlsx'], true)) {
+
+            $columns = [
+                'Nama Barang',
+                'Satuan',
+                'Jumlah Stock',
+                'Batas Minimal',
+                'Selisih',
+                'Status Alert',
+                'Rentang Waktu',
+                'Keterangan'
+            ];
+
+            $rows = $data->map(fn($item) => [
+                $item->barang?->nama_barang ?? '-',
+                $item->barang?->satuan ?? '-',
+                $item->jumlah_stock,
+                $item->minimal,
+                $item->selisih,
+                $item->statusAlert,
+                $item->rentang_waktu ?? '-',
+                $item->keterangan ?? '-',
+            ])->all();
+
+            return SimpleXlsxExporter::download(
+                $columns,
+                $rows,
+                'laporan_stock_minimal.xlsx',
+                'Stock Minimal'
+            );
+        }
     }
 }

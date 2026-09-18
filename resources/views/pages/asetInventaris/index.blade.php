@@ -17,12 +17,63 @@
     <div class="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Daftar Aset & Inventaris</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 mb-2">Cari nomor inventaris untuk melihat detail dan histori pemeliharaan.</p>
-            <a href="{{ route('aset-inventaris.export') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 h-[42px] py-2.5 text-sm font-medium text-white hover:bg-green-700">Download Excel</a>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Cari nomor inventaris untuk melihat detail dan histori pemeliharaan.</p>
 
         </div>
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ route('aset-inventaris.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">+ Tambah Aset</a>
+        <div class="mt-2 flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <!-- Form Export Berdasarkan Bulan & Tahun -->
+            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                <form
+                    action="{{ route('aset-inventaris.export') }}"
+                    method="GET"
+                    class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+
+                    <div x-data="{ open: false }" class="relative w-full sm:w-auto">
+
+                        <button
+                            type="button"
+                            @click="open = !open"
+                            class="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-green-700 dark:hover:bg-green-500 sm:w-auto">
+                            Download
+
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <div
+                            x-show="open"
+                            x-cloak
+                            @click.outside="open = false"
+                            x-transition
+                            class="absolute left-0 right-auto z-20 mt-2 w-full min-w-40 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800 sm:left-auto sm:right-0 sm:w-40">
+                            <button
+                                type="submit"
+                                name="format"
+                                value="xlsx"
+                                class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white">
+                                Download Excel
+                            </button>
+
+                            <button
+                                type="submit"
+                                name="format"
+                                value="pdf"
+                                class="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white">
+                                Download PDF
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <a href="{{ route('aset-inventaris.create') }}" class="inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 sm:w-auto">+ Tambah Aset</a>
         </div>
     </div>
 

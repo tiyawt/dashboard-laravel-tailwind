@@ -193,6 +193,38 @@
   }
 }
 
+@layer utilities {
+  @media (max-width: 639px) {
+    nav[role='navigation'][aria-label='Pagination Navigation'] {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    nav[role='navigation'][aria-label='Pagination Navigation'] > .flex.gap-2 {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    nav[role='navigation'][aria-label='Pagination Navigation'] > .flex.gap-2 > * {
+      flex-shrink: 0;
+    }
+  }
+
+  nav[role='navigation'][aria-label='Pagination Navigation'] .cursor-not-allowed {
+    background-color: var(--color-gray-100) !important;
+    border-color: var(--color-gray-300) !important;
+    color: var(--color-gray-400) !important;
+  }
+
+  .dark nav[role='navigation'][aria-label='Pagination Navigation'] .cursor-not-allowed {
+    background-color: var(--color-gray-800) !important;
+    border-color: var(--color-gray-700) !important;
+    color: var(--color-gray-500) !important;
+  }
+}
+
 @utility menu-item {
   @apply relative flex items-center w-full gap-3 px-3 py-2 font-medium rounded-lg text-theme-sm;
 }

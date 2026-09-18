@@ -18,7 +18,7 @@
     request()->routeIs('stok-minimal.index') => 'Batas Stok Minimal Barang',
     request()->routeIs('stok-minimal.create') => 'Tambah Barang Master & Minimal Stok',
     request()->routeIs('stok-minimal.edit') => 'Edit Barang & Batas Stok Minimal',
-    request()->routeIs('barang-keluar.index') => 'Stok Keluar Lemari',
+    request()->routeIs('barang-keluar.index') => 'Barang Keluar',
     request()->routeIs('barang-keluar.create') => 'Catat Barang Keluar',
     request()->routeIs('barang-keluar.edit') => 'Edit Catatan Barang Keluar',
     request()->routeIs('aset-inventaris.*') => 'Aset & Inventaris',
